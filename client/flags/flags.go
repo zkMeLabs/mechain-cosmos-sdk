@@ -15,9 +15,9 @@ const (
 	// DefaultGasAdjustment is applied to gas estimates to avoid tx execution
 	// failures due to state changes that might occur between the tx simulation
 	// and the actual run.
-	DefaultGasAdjustment = 1.0
+	DefaultGasAdjustment = 1.2
 	DefaultGasLimit      = 200000
-	GasFlagAuto          = "auto"
+	FlagAuto             = "auto"
 
 	// DefaultKeyringBackend
 	DefaultKeyringBackend = keyring.BackendOS
@@ -133,7 +133,7 @@ func AddTxFlagsToCmd(cmd *cobra.Command) {
 	f.String(FlagChainID, "", "The network chain ID")
 	// --gas can accept integers and "auto"
 	f.String(FlagGas, "", fmt.Sprintf("gas limit to set per-transaction; set to %q to calculate sufficient gas automatically. Note: %q option doesn't always report accurate results. Set a valid coin value to adjust the result. Can be used instead of %q. (default %d)",
-		GasFlagAuto, GasFlagAuto, FlagFees, DefaultGasLimit))
+		FlagAuto, FlagAuto, FlagFees, DefaultGasLimit))
 
 	AddKeyringFlags(f)
 }
@@ -162,7 +162,7 @@ type GasSetting struct {
 
 func (v *GasSetting) String() string {
 	if v.Simulate {
-		return GasFlagAuto
+		return FlagAuto
 	}
 
 	return strconv.FormatUint(v.Gas, 10)
@@ -177,13 +177,13 @@ func ParseGasSetting(gasStr string) (GasSetting, error) {
 	case "":
 		return GasSetting{false, DefaultGasLimit}, nil
 
-	case GasFlagAuto:
+	case FlagAuto:
 		return GasSetting{true, 0}, nil
 
 	default:
 		gas, err := strconv.ParseUint(gasStr, 10, 64)
 		if err != nil {
-			return GasSetting{}, fmt.Errorf("gas must be either integer or %s", GasFlagAuto)
+			return GasSetting{}, fmt.Errorf("gas must be either integer or %s", FlagAuto)
 		}
 
 		return GasSetting{false, gas}, nil
