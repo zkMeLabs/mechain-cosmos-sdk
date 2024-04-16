@@ -6,13 +6,13 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
+      interval: monthly
       time: "01:00"
 
   - package-ecosystem: gomod
     directory: "/"
     schedule:
-      interval: daily
+      interval: monthly
       time: "01:05"
     labels:
       - "A:automerge"
@@ -20,7 +20,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/simapp"
     schedule:
-      interval: daily
+      interval: monthly
       time: "01:10"
     labels:
       - "A:automerge"
@@ -28,7 +28,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/tests"
     schedule:
-      interval: weekly
+      interval: monthly
       day: monday
       time: "01:15"
     labels:
@@ -37,7 +37,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/api"
     schedule:
-      interval: weekly
+      interval: monthly
       day: tuesday
       time: "01:20"
     labels:
@@ -46,7 +46,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/orm"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "01:25"
     labels:
@@ -55,7 +55,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/core"
     schedule:
-      interval: weekly
+      interval: monthly
       day: thursday
       time: "01:30"
     labels:
@@ -64,7 +64,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/depinject"
     schedule:
-      interval: weekly
+      interval: monthly
       day: friday
       time: "01:35"
     labels:
@@ -73,7 +73,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/errors"
     schedule:
-      interval: weekly
+      interval: monthly
       day: monday
       time: "01:40"
     labels:
@@ -82,7 +82,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/math"
     schedule:
-      interval: weekly
+      interval: monthly
       day: tuesday
       time: "01:45"
     labels:
@@ -91,7 +91,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/client/v2"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "01:50"
     labels:
@@ -100,7 +100,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/tx"
     schedule:
-      interval: weekly
+      interval: monthly
       day: thursday
       time: "01:55"
     labels:
@@ -109,7 +109,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/tools/cosmovisor"
     schedule:
-      interval: weekly
+      interval: monthly
       day: friday
       time: "02:00"
     labels:
@@ -118,7 +118,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/tools/confix"
     schedule:
-      interval: weekly
+      interval: monthly
       day: tuesday
       time: "02:10"
     labels:
@@ -127,7 +127,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/tools/hubl"
     schedule:
-      interval: weekly
+      interval: monthly
       day: thursday
       time: "02:15"
     labels:
@@ -136,7 +136,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/collections"
     schedule:
-      interval: weekly
+      interval: monthly
       day: friday
       time: "02:20"
     labels:
@@ -145,7 +145,7 @@ updates:
   - package-ecosystem: gomod
     directory: "x/accounts"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "02:35"
     labels:
@@ -154,7 +154,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/nft"
     schedule:
-      interval: weekly
+      interval: monthly
       day: monday
       time: "02:25"
     labels:
@@ -163,7 +163,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/circuit"
     schedule:
-      interval: weekly
+      interval: monthly
       day: tuesday
       time: "02:30"
     labels:
@@ -172,7 +172,7 @@ updates:
   - package-ecosystem: gomod
     directory: "x/feegrant"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "02:35"
     labels:
@@ -182,7 +182,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/evidence"
     schedule:
-      interval: weekly
+      interval: monthly
       day: thursday
       time: "02:40"
     labels:
@@ -191,7 +191,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/store"
     schedule:
-      interval: weekly
+      interval: monthly
       day: friday
       time: "02:45"
     labels:
@@ -200,7 +200,7 @@ updates:
   - package-ecosystem: gomod
     directory: "x/upgrade"
     schedule:
-      interval: weekly
+      interval: monthly
       day: monday
       time: "02:50"
     labels:
@@ -209,7 +209,7 @@ updates:
   - package-ecosystem: gomod
     directory: "log"
     schedule:
-      interval: weekly
+      interval: monthly
       day: tuesday
       time: "02:55"
     labels:
@@ -218,7 +218,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/protocolpool"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "03:00"
     labels:
@@ -227,7 +227,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/params"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "03:05"
     labels:
@@ -236,7 +236,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/auth"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "03:10"
     labels:
@@ -245,7 +245,7 @@ updates:
   - package-ecosystem: gomod
     directory: "/x/epochs"
     schedule:
-      interval: weekly
+      interval: monthly
       day: wednesday
       time: "03:15"
     labels:
@@ -257,7 +257,7 @@ updates:
     directory: "/"
     target-branch: "release/v0.47.x"
     schedule:
-      interval: daily
+      interval: monthly
       time: "03:00"
     labels:
       - "A:automerge"
@@ -282,7 +282,7 @@ updates:
     directory: "/"
     target-branch: "release/v0.50.x"
     schedule:
-      interval: daily
+      interval: monthly
       time: "03:00"
     labels:
       - "A:automerge"
