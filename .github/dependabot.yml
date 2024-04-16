@@ -6,12 +6,12 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
+      interval: monthly
 
   - package-ecosystem: npm
     directory: "/docs"
     schedule:
-      interval: weekly
+      interval: monthly
     # DevRel should review docs updates
     assignees:
       - "julienrbrt"
@@ -19,91 +19,91 @@ updates:
   - package-ecosystem: gomod
     directory: "/"
     schedule:
-      interval: daily
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/simapp"
     schedule:
-      interval: daily
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/tests"
     schedule:
-      interval: daily
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/api"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/orm"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/core"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/tools/cosmovisor"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/depinject"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/errors"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/math"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/client/v2"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/tx"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
     directory: "/tools/rosetta"
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - "A:automerge"
       - dependencies
