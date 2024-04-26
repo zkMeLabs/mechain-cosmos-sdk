@@ -2,6 +2,7 @@ package baseapp
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -10,12 +11,15 @@ import (
 	"syscall"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/gogoproto/proto"
 	"google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 
+	cmtrpctypes "github.com/cometbft/cometbft/rpc/jsonrpc/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
@@ -30,6 +34,16 @@ const (
 	QueryPathCustom = "custom"
 	QueryPathP2P    = "p2p"
 	QueryPathStore  = "store"
+)
+
+// Supported EVM json-rpc requests
+const (
+	EthBlockNumber      = "eth_blockNumber"
+	EthGetBlockByNumber = "eth_getBlockByNumber"
+	EthGetBalance       = "eth_getBalance"
+	EthChainID          = "eth_chainId"
+	NetVersion          = "net_version"
+	EthNetworkID        = "eth_networkId"
 )
 
 // InitChain implements the ABCI interface. It runs the initialization logic
@@ -489,7 +503,65 @@ func (app *BaseApp) Commit() abci.ResponseCommit {
 	return res
 }
 
-// halt attempts to gracefully shutdown the node via SIGINT and SIGTERM falling
+// PreBeginBlock implements the ABCI application interface.
+func (app *BaseApp) PreBeginBlock(req abci.RequestPreBeginBlock) (res abci.ResponsePrefetch) {
+	defer func() {
+		if r := recover(); r != nil {
+			res = abci.ResponsePrefetch{Error: errorsmod.Wrapf(sdkerrors.ErrPanic, "%v", r).Error()}
+		}
+	}()
+
+	if req.Header.ChainID != app.chainID {
+		err := fmt.Sprintf("invalid request chain-id: %s, expected: %s", req.Header.ChainID, app.chainID)
+		return abci.ResponsePrefetch{Error: err}
+	}
+
+	if app.cms.TracingEnabled() {
+		app.cms.SetTracingContext(map[string]interface{}{"blockHeight": req.Header.Height})
+	}
+
+	// Initialize the preDeliverTx state.
+	app.setPreState(req.StateNumber, req.Header)
+
+	res = abci.ResponsePrefetch{Code: abci.CodeTypeOK}
+	return
+}
+
+func (app *BaseApp) PreDeliverTx(req abci.RequestPreDeliverTx) {
+	defer func() {
+		if r := recover(); r != nil {
+			return
+		}
+	}()
+
+	preState := app.preDeliverStates[req.StateIndex]
+	if preState == nil {
+		return
+	}
+
+	ctx := preState.ctx.
+		WithTxBytes(req.Tx).
+		WithVoteInfos(app.voteInfos)
+
+	ctx = ctx.WithConsensusParams(app.GetConsensusParams(ctx))
+
+	app.runTxOnContext(ctx, runTxModePreDeliver, req.Tx)
+}
+
+func (app *BaseApp) PreCommit(req abci.RequestPreCommit) (res abci.ResponsePrefetch) {
+	defer func() {
+		if r := recover(); r != nil {
+			res = abci.ResponsePrefetch{Error: errorsmod.Wrapf(sdkerrors.ErrPanic, "%v", r).Error()}
+		}
+	}()
+
+	app.preDeliverStates[req.StateIndex].ms.Write()
+
+	res = abci.ResponsePrefetch{Code: abci.CodeTypeOK}
+	return
+}
+
+// halt attempts to gracefully shut down the node via SIGINT and SIGTERM falling
 // back on os.Exit if both fail.
 func (app *BaseApp) halt() {
 	app.logger.Info("halting node per configuration", "height", app.haltHeight, "time", app.haltTime)
@@ -559,6 +631,25 @@ func (app *BaseApp) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	}
 
 	return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown query path"), app.trace)
+}
+
+func (app *BaseApp) EthQuery(req abci.RequestEthQuery) (res abci.ResponseEthQuery) {
+	defer func() {
+		if r := recover(); r != nil {
+			res = sdkerrors.EthQueryResult(errorsmod.Wrapf(sdkerrors.ErrPanic, "%v", r), app.trace)
+		}
+	}()
+
+	var rpcReq cmtrpctypes.RPCRequest
+	if err := json.Unmarshal(req.Request, &rpcReq); err != nil {
+		return sdkerrors.EthQueryResult(errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to unmarshal rpc request: %v", err), app.trace)
+	}
+
+	if ethHandler := app.ethQueryRouter.Route(rpcReq.Method); ethHandler != nil {
+		return app.handleEthQuery(ethHandler, rpcReq)
+	}
+
+	return res
 }
 
 // ListSnapshots implements the ABCI interface. It delegates to app.snapshotManager if set.
@@ -701,6 +792,41 @@ func (app *BaseApp) handleQueryGRPC(handler GRPCQueryHandler, req abci.RequestQu
 	return res
 }
 
+func (app *BaseApp) handleEthQuery(handler EthQueryHandler, req cmtrpctypes.RPCRequest) abci.ResponseEthQuery {
+	// use custom query multistore if provided
+	qms := app.qms
+	if qms == nil {
+		qms = app.cms.(storetypes.MultiStore)
+	}
+
+	height := qms.LatestVersion()
+	if height == 0 {
+		err := errorsmod.Wrapf(sdkerrors.ErrInvalidHeight, "%s is not ready; please wait for first block", app.Name())
+		return sdkerrors.EthQueryResult(err, app.trace)
+	}
+
+	cacheMS, err := qms.CacheMultiStoreWithVersion(height)
+	if err != nil {
+		err := errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"failed to load state at height %d; %s", height, err,
+		)
+		return sdkerrors.EthQueryResult(err, app.trace)
+	}
+
+	// branch the commit-multistore for safety
+	ctx := sdk.NewContext(cacheMS, app.checkState.ctx.BlockHeader(), true, app.upgradeChecker, app.logger).
+		WithBlockHeight(height)
+
+	res, err := handler(ctx, req)
+	if err != nil {
+		res = sdkerrors.EthQueryResult(gRPCErrorToSDKError(err), app.trace)
+		return res
+	}
+
+	return res
+}
+
 func gRPCErrorToSDKError(err error) error {
 	status, ok := grpcstatus.FromError(err)
 	if !ok {
@@ -781,7 +907,7 @@ func (app *BaseApp) CreateQueryContext(height int64, prove bool) (sdk.Context, e
 	}
 
 	// branch the commit-multistore for safety
-	ctx := sdk.NewContext(cacheMS, app.checkState.ctx.BlockHeader(), true, app.logger).
+	ctx := sdk.NewContext(cacheMS, app.checkState.ctx.BlockHeader(), true, app.upgradeChecker, app.logger).
 		WithMinGasPrices(app.minGasPrices).
 		WithBlockHeight(height)
 
@@ -869,6 +995,11 @@ func (app *BaseApp) GetBlockRetentionHeight(commitHeight int64) int64 {
 	}
 
 	return retentionHeight
+}
+
+// SetMockBlockHeight is only used for testing.
+func (app *BaseApp) SetMockBlockHeight(height int64) {
+	app.deliverState.ctx = app.deliverState.ctx.WithBlockHeight(height)
 }
 
 func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {

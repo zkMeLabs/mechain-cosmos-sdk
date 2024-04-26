@@ -52,7 +52,7 @@ type Factory struct {
 func NewFactoryCLI(clientCtx client.Context, flagSet *pflag.FlagSet) (Factory, error) {
 	signModeStr := clientCtx.SignModeStr
 
-	signMode := signing.SignMode_SIGN_MODE_UNSPECIFIED
+	signMode := signing.SignMode_SIGN_MODE_EIP_712
 	switch signModeStr {
 	case flags.SignModeDirect:
 		signMode = signing.SignMode_SIGN_MODE_DIRECT
@@ -62,6 +62,8 @@ func NewFactoryCLI(clientCtx client.Context, flagSet *pflag.FlagSet) (Factory, e
 		signMode = signing.SignMode_SIGN_MODE_DIRECT_AUX
 	case flags.SignModeEIP191:
 		signMode = signing.SignMode_SIGN_MODE_EIP_191
+	case flags.SignModeEIP712:
+		signMode = signing.SignMode_SIGN_MODE_EIP_712
 	}
 
 	var accNum, accSeq uint64

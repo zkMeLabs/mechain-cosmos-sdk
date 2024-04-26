@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/cometbft/cometbft/node"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	"github.com/spf13/cobra"
 
 	dbm "github.com/cometbft/cometbft-db"
@@ -35,7 +37,19 @@ func RestoreSnapshotCmd(appCreator servertypes.AppCreator) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			app := appCreator(ctx.Logger, db, nil, ctx.Viper)
+
+			genDocProvider := node.DefaultGenesisDocProviderFunc(ctx.Config)
+			genDoc, err := genDocProvider()
+			if err != nil {
+				return err
+			}
+
+			config, err := serverconfig.GetConfig(ctx.Viper)
+			if err != nil {
+				return err
+			}
+
+			app := appCreator(ctx.Logger, db, nil, genDoc.ChainID, &config, ctx.Viper)
 
 			sm := app.SnapshotManager()
 			return sm.RestoreLocalSnapshot(height, uint32(format))

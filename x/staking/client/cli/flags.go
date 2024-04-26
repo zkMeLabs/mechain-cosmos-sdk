@@ -32,6 +32,10 @@ const (
 	FlagNodeID        = "node-id"
 	FlagIP            = "ip"
 	FlagP2PPort       = "p2p-port"
+
+	FlagAddressRelayer    = "addr-relayer"
+	FlagAddressChallenger = "addr-challenger"
+	FlagBlsKey            = "bls-key"
 )
 
 // common flagsets to add to various functions
@@ -81,6 +85,27 @@ func FlagSetPublicKey() *flag.FlagSet {
 	return fs
 }
 
+// FlagSetRelayerAddress Returns the flagset for relayer address related operations.
+func FlagSetRelayerAddress() *flag.FlagSet {
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fs.String(FlagAddressRelayer, "", "The relayer address of the validator")
+	return fs
+}
+
+// FlagSetBlsKey Returns the flagset for bls pubkey related operations.
+func FlagSetBlsKey() *flag.FlagSet {
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fs.String(FlagBlsKey, "", "The bls pubkey of the validator")
+	return fs
+}
+
+// FlagSetChallengerAddress Returns the flagset for challenger address related operations.
+func FlagSetChallengerAddress() *flag.FlagSet {
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fs.String(FlagAddressChallenger, "", "The challenger address of the validator")
+	return fs
+}
+
 func flagSetDescriptionEdit() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
@@ -101,7 +126,7 @@ func flagSetCommissionUpdate() *flag.FlagSet {
 	return fs
 }
 
-func flagSetDescriptionCreate() *flag.FlagSet {
+func flagSetDescriptionCreate() *flag.FlagSet { //nolint:unused
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
 	fs.String(FlagMoniker, "", "The validator's name")

@@ -4,10 +4,12 @@ import (
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
 	authmodulev1 "cosmossdk.io/api/cosmos/auth/module/v1"
+	authzmodulev1 "cosmossdk.io/api/cosmos/authz/module/v1"
 	bankmodulev1 "cosmossdk.io/api/cosmos/bank/module/v1"
 	consensusmodulev1 "cosmossdk.io/api/cosmos/consensus/module/v1"
 	distrmodulev1 "cosmossdk.io/api/cosmos/distribution/module/v1"
 	feegrantmodulev1 "cosmossdk.io/api/cosmos/feegrant/module/v1"
+	gashubmodulev1 "cosmossdk.io/api/cosmos/gashub/module/v1"
 	genutilmodulev1 "cosmossdk.io/api/cosmos/genutil/module/v1"
 	govmodulev1 "cosmossdk.io/api/cosmos/gov/module/v1"
 	mintmodulev1 "cosmossdk.io/api/cosmos/mint/module/v1"
@@ -29,6 +31,7 @@ var beginBlockOrder = []string{
 	"evidence",
 	"staking",
 	"auth",
+	"authz",
 	"bank",
 	"gov",
 	"crisis",
@@ -40,6 +43,7 @@ var beginBlockOrder = []string{
 	"params",
 	"consensus",
 	"vesting",
+	"gashub",
 }
 
 var endBlockersOrder = []string{
@@ -48,6 +52,7 @@ var endBlockersOrder = []string{
 	"staking",
 	"capability",
 	"auth",
+	"authz",
 	"bank",
 	"distribution",
 	"slashing",
@@ -62,12 +67,15 @@ var endBlockersOrder = []string{
 	"consensus",
 	"upgrade",
 	"vesting",
+	"gashub",
 }
 
 var initGenesisOrder = []string{
 	"capability",
 	"auth",
+	"authz",
 	"bank",
+	"gashub",
 	"distribution",
 	"staking",
 	"slashing",
@@ -148,6 +156,15 @@ func StakingModule() ModuleOption {
 	}
 }
 
+func AuthzModule() ModuleOption {
+	return func(config *appConfig) {
+		config.moduleConfigs["authz"] = &appv1alpha1.ModuleConfig{
+			Name:   "authz",
+			Config: appconfig.WrapAny(&authzmodulev1.Module{}),
+		}
+	}
+}
+
 func SlashingModule() ModuleOption {
 	return func(config *appConfig) {
 		config.moduleConfigs["slashing"] = &appv1alpha1.ModuleConfig{
@@ -222,6 +239,15 @@ func MintModule() ModuleOption {
 					Implementation: "github.com/cosmos/cosmos-sdk/x/staking/keeper/*keeper.Keeper",
 				},
 			},
+		}
+	}
+}
+
+func GashubModule() ModuleOption {
+	return func(config *appConfig) {
+		config.moduleConfigs["gashub"] = &appv1alpha1.ModuleConfig{
+			Name:   "gashub",
+			Config: appconfig.WrapAny(&gashubmodulev1.Module{}),
 		}
 	}
 }

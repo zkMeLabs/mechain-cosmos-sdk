@@ -10,7 +10,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
-	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	paramscutils "github.com/cosmos/cosmos-sdk/x/params/client/utils"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 )
@@ -76,7 +78,12 @@ Where proposal.json contains:
 				return err
 			}
 
-			msg, err := govv1beta1.NewMsgSubmitProposal(content, deposit, from)
+			govAcctAddress := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+			contentMsg, err := govv1.NewLegacyContent(content, govAcctAddress)
+			if err != nil {
+				return err
+			}
+			msg, err := govv1.NewMsgSubmitProposal([]sdk.Msg{contentMsg}, deposit, from.String(), "", content.Title, content.Description)
 			if err != nil {
 				return err
 			}

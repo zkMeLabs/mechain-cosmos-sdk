@@ -17,7 +17,7 @@ var _ legacytx.LegacyMsg = &MsgUpdateParams{}
 // GetSigners returns the signer addresses that are expected to sign the result
 // of GetSignBytes.
 func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
-	authority, _ := sdk.AccAddressFromBech32(msg.Authority)
+	authority, _ := sdk.AccAddressFromHexUnsafe(msg.Authority)
 	return []sdk.AccAddress{authority}
 }
 
@@ -46,6 +46,7 @@ func (msg MsgUpdateParams) ToProtoConsensusParams() tmproto.ConsensusParams {
 		Block: &tmproto.BlockParams{
 			MaxBytes: msg.Block.MaxBytes,
 			MaxGas:   msg.Block.MaxGas,
+			MaxTxs:   msg.Block.MaxTxs,
 		},
 		Evidence: &tmproto.EvidenceParams{
 			MaxAgeNumBlocks: msg.Evidence.MaxAgeNumBlocks,
