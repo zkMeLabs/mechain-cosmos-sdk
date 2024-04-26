@@ -42,7 +42,7 @@ func (k msgServer) SubmitProposal(goCtx context.Context, msg *v1.MsgSubmitPropos
 		return nil, err
 	}
 
-	proposer, err := sdk.AccAddressFromBech32(msg.GetProposer())
+	proposer, err := sdk.AccAddressFromHexUnsafe(msg.GetProposer())
 	if err != nil {
 		return nil, err
 	}
@@ -51,17 +51,6 @@ func (k msgServer) SubmitProposal(goCtx context.Context, msg *v1.MsgSubmitPropos
 	if err != nil {
 		return nil, err
 	}
-
-	bytes, err := proposal.Marshal()
-	if err != nil {
-		return nil, err
-	}
-
-	// ref: https://github.com/cosmos/cosmos-sdk/issues/9683
-	ctx.GasMeter().ConsumeGas(
-		3*ctx.KVGasConfig().WriteCostPerByte*uint64(len(bytes)),
-		"submit proposal",
-	)
 
 	defer telemetry.IncrCounter(1, govtypes.ModuleName, "proposal")
 
@@ -113,7 +102,7 @@ func (k msgServer) ExecLegacyContent(goCtx context.Context, msg *v1.MsgExecLegac
 // Vote implements the MsgServer.Vote method.
 func (k msgServer) Vote(goCtx context.Context, msg *v1.MsgVote) (*v1.MsgVoteResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr, err := sdk.AccAddressFromBech32(msg.Voter)
+	accAddr, err := sdk.AccAddressFromHexUnsafe(msg.Voter)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +125,7 @@ func (k msgServer) Vote(goCtx context.Context, msg *v1.MsgVote) (*v1.MsgVoteResp
 // VoteWeighted implements the MsgServer.VoteWeighted method.
 func (k msgServer) VoteWeighted(goCtx context.Context, msg *v1.MsgVoteWeighted) (*v1.MsgVoteWeightedResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr, accErr := sdk.AccAddressFromBech32(msg.Voter)
+	accAddr, accErr := sdk.AccAddressFromHexUnsafe(msg.Voter)
 	if accErr != nil {
 		return nil, accErr
 	}
@@ -159,7 +148,7 @@ func (k msgServer) VoteWeighted(goCtx context.Context, msg *v1.MsgVoteWeighted) 
 // Deposit implements the MsgServer.Deposit method.
 func (k msgServer) Deposit(goCtx context.Context, msg *v1.MsgDeposit) (*v1.MsgDepositResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr, err := sdk.AccAddressFromBech32(msg.Depositor)
+	accAddr, err := sdk.AccAddressFromHexUnsafe(msg.Depositor)
 	if err != nil {
 		return nil, err
 	}

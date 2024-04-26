@@ -14,6 +14,7 @@ import (
 	"github.com/cometbft/cometbft/statesync"
 	"github.com/cometbft/cometbft/store"
 	tversion "github.com/cometbft/cometbft/version"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
@@ -145,8 +146,12 @@ func BootstrapStateCmd(appCreator types.AppCreator) *cobra.Command {
 				if err != nil {
 					return err
 				}
+				config, err := serverconfig.GetConfig(serverCtx.Viper)
+				if err != nil {
+					return err
+				}
 
-				app := appCreator(serverCtx.Logger, db, nil, serverCtx.Viper)
+				app := appCreator(serverCtx.Logger, db, nil, serverCtx.Config.ChainID(), &config, serverCtx.Viper)
 				height = app.CommitMultiStore().LastCommitID().Version
 			}
 
