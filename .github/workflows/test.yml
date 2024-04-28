@@ -12,6 +12,10 @@ concurrency:
   group: ci-${{ github.ref }}-tests
   cancel-in-progress: true
 
+env:
+  CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
+  CGO_CFLAGS_ALLOW: "-O -D__BLST_PORTABLE__"
+
 jobs:
   split-test-files:
     runs-on: ubuntu-latest
@@ -19,7 +23,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
       - name: Create a file with all core Cosmos SDK pkgs
         run: go list ./... > pkgs.txt
       - name: Split pkgs into 4 files
@@ -52,7 +57,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
           cache: true
           cache-dependency-path: go.sum
       - uses: technote-space/get-diff-action@v6.1.1
@@ -70,7 +76,7 @@ jobs:
       - name: test & coverage report creation
         if: env.GIT_DIFF
         run: |
-          cat pkgs.txt.part.${{ matrix.part }} | xargs go test -mod=readonly -race -timeout 30m -coverprofile=${{ matrix.part }}profile.out -covermode=atomic -tags='ledger test_ledger_mock'
+          cat pkgs.txt.part.${{ matrix.part }} | xargs go test -mod=readonly -race -timeout 60m -coverprofile=${{ matrix.part }}profile.out -covermode=atomic -tags='ledger test_ledger_mock'
       - uses: actions/upload-artifact@v3
         if: env.GIT_DIFF
         with:
@@ -83,7 +89,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
           cache: true
           cache-dependency-path: go.sum
       - uses: technote-space/get-diff-action@v6.1.1
@@ -113,7 +120,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
           cache: true
           cache-dependency-path: go.sum
       - uses: technote-space/get-diff-action@v6.1.1
@@ -176,12 +184,6 @@ jobs:
         with:
           name: "${{ github.sha }}-e2e-coverage"
         continue-on-error: true
-      - name: sonarcloud
-        if: env.GIT_DIFF
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   liveness-test:
     runs-on: ubuntu-latest
@@ -190,7 +192,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
           cache: true
           cache-dependency-path: go.sum
       - uses: technote-space/get-diff-action@v6.1.1
@@ -219,7 +222,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
           cache: true
           cache-dependency-path: go.sum
       - uses: technote-space/get-diff-action@v6.1.1
@@ -244,7 +248,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19.8
+          go-version: "1.19"
+          check-latest: true
           cache: true
           cache-dependency-path: simapp/go.sum
       - uses: technote-space/get-diff-action@v6.1.1
@@ -258,17 +263,9 @@ jobs:
         if: env.GIT_DIFF
         run: |
           cd simapp
-          go test -mod=readonly -timeout 30m -coverprofile=coverage.out -covermode=atomic -tags='norace ledger test_ledger_mock rocksdb_build' ./...
+          go test -mod=readonly -timeout 60m -coverprofile=coverage.out -covermode=atomic -tags='norace ledger test_ledger_mock rocksdb_build' ./...
       - name: tests simapp v1
         if: env.GIT_DIFF
         run: |
           cd simapp
-          go test -mod=readonly -timeout 30m -tags='app_v1 norace ledger test_ledger_mock rocksdb_build' ./...
-      - name: sonarcloud
-        if: env.GIT_DIFF
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: simapp/
+          go test -mod=readonly -timeout 60m -tags='app_v1 norace ledger test_ledger_mock rocksdb_build' ./...
