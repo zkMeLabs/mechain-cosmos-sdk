@@ -249,7 +249,7 @@ func encodeDoneKey(name string, height int64) []byte {
 
 // GetDoneHeight returns the height at which the given upgrade was executed
 func (k Keeper) GetDoneHeight(ctx sdk.Context, name string) int64 {
-	iter := sdk.KVStorePrefixIterator(ctx.KVStore(k.storeKey), []byte{types.DoneByte})
+	iter := sdk.KVStorePrefixIterator(ctx.KVStoreWithZeroRead(k.storeKey), []byte{types.DoneByte})
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
@@ -324,6 +324,12 @@ func (k Keeper) HasHandler(name string) bool {
 
 // ApplyUpgrade will execute the handler associated with the Plan and mark the plan as done.
 func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
+	err := k.InitUpgraded(ctx)
+	if err != nil {
+		ctx.Logger().Error("failed to init upgraded", "err", err)
+		return
+	}
+
 	initializer := k.upgradeInitializer[plan.Name]
 
 	if initializer != nil {
@@ -428,7 +434,7 @@ func (k Keeper) IsUpgraded(ctx sdk.Context, name string) bool {
 
 // InitUpgraded execute the upgrade initializer that the upgrade is already applied.
 func (k Keeper) InitUpgraded(ctx sdk.Context) error {
-	iter := storetypes.KVStorePrefixIterator(ctx.KVStore(k.storeKey), []byte{types.DoneByte})
+	iter := storetypes.KVStorePrefixIterator(ctx.KVStoreWithZeroRead(k.storeKey), []byte{types.DoneByte})
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
@@ -462,6 +468,8 @@ func (keeper *Keeper) RegisterUpgradePlan(chianID string, plans []serverconfig.U
 // getExistChainConfig returns the exist chain config
 func getExistChainConfig(chainID string) *types.UpgradeConfig {
 	switch chainID {
+	case types.MainnetChainID:
+		return types.MainnetConfig
 	case types.TestnetChainID:
 		return types.TestnetConfig
 	default:

@@ -48,18 +48,23 @@ type GasMeter interface {
 	IsPastLimit() bool
 	IsOutOfGas() bool
 	String() string
+
+	RwConsumed() Gas                         // get metrics of store r/w
+	ConsumeRw(amount Gas, descriptor string) // consume metrics of store r/w
 }
 
 type basicGasMeter struct {
-	limit    Gas
-	consumed Gas
+	limit      Gas
+	consumed   Gas
+	rwConsumed Gas
 }
 
 // NewGasMeter returns a reference to a new basicGasMeter.
 func NewGasMeter(limit Gas) GasMeter {
 	return &basicGasMeter{
-		limit:    limit,
-		consumed: 0,
+		limit:      limit,
+		consumed:   0,
+		rwConsumed: 0,
 	}
 }
 
@@ -146,14 +151,29 @@ func (g *basicGasMeter) String() string {
 	return fmt.Sprintf("BasicGasMeter:\n  limit: %d\n  consumed: %d", g.limit, g.consumed)
 }
 
+func (g *basicGasMeter) RwConsumed() Gas {
+	return g.rwConsumed
+}
+
+func (g *basicGasMeter) ConsumeRw(amount Gas, descriptor string) {
+	var overflow bool
+	g.rwConsumed, overflow = addUint64Overflow(g.rwConsumed, amount)
+	if overflow {
+		g.rwConsumed = math.MaxUint64
+		panic(ErrorGasOverflow{descriptor})
+	}
+}
+
 type infiniteGasMeter struct {
-	consumed Gas
+	consumed   Gas
+	rwConsumed Gas
 }
 
 // NewInfiniteGasMeter returns a new gas meter without a limit.
 func NewInfiniteGasMeter() GasMeter {
 	return &infiniteGasMeter{
-		consumed: 0,
+		consumed:   0,
+		rwConsumed: 0,
 	}
 }
 
@@ -217,6 +237,19 @@ func (g *infiniteGasMeter) String() string {
 	return fmt.Sprintf("InfiniteGasMeter:\n  consumed: %d", g.consumed)
 }
 
+func (g *infiniteGasMeter) RwConsumed() Gas {
+	return g.rwConsumed
+}
+
+func (g *infiniteGasMeter) ConsumeRw(amount Gas, descriptor string) {
+	var overflow bool
+	g.rwConsumed, overflow = addUint64Overflow(g.rwConsumed, amount)
+	if overflow {
+		g.rwConsumed = math.MaxUint64
+		panic(ErrorGasOverflow{descriptor})
+	}
+}
+
 // GasConfig defines gas cost for each operation on KVStores
 type GasConfig struct {
 	HasCost          Gas
@@ -226,6 +259,19 @@ type GasConfig struct {
 	WriteCostFlat    Gas
 	WriteCostPerByte Gas
 	IterNextCostFlat Gas
+}
+
+// KVGasConfigAfterNagqu returns a gas config after Nagqu harfork for KVStores.
+func KVGasConfigAfterNagqu() GasConfig {
+	return GasConfig{
+		HasCost:          0,
+		DeleteCost:       1000,
+		ReadCostFlat:     0,
+		ReadCostPerByte:  0,
+		WriteCostFlat:    2000,
+		WriteCostPerByte: 30,
+		IterNextCostFlat: 0,
+	}
 }
 
 // KVGasConfig returns a default gas config for KVStores.

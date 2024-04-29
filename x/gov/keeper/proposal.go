@@ -43,6 +43,12 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 			return v1.Proposal{}, sdkerrors.Wrap(types.ErrInvalidProposalMsg, err.Error())
 		}
 
+		if runtimeMsg, ok := msg.(sdk.MsgWithRuntimeValidation); ok {
+			if err := runtimeMsg.ValidateRuntime(ctx); err != nil {
+				return v1.Proposal{}, sdkerrors.Wrap(types.ErrInvalidProposalMsg, err.Error())
+			}
+		}
+
 		signers := msg.GetSigners()
 		if len(signers) != 1 {
 			return v1.Proposal{}, types.ErrInvalidSigner

@@ -1,6 +1,8 @@
 package tx
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -15,11 +17,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/eth/ethsecp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 )
 
 // Factory defines a client transaction factory that facilitates generating and
@@ -80,8 +85,13 @@ func NewFactoryCLI(clientCtx client.Context, flagSet *pflag.FlagSet) (Factory, e
 	memo, _ := flagSet.GetString(flags.FlagNote)
 	timeoutHeight, _ := flagSet.GetUint64(flags.FlagTimeoutHeight)
 
-	gasStr, _ := flagSet.GetString(flags.FlagGas)
-	gasSetting, _ := flags.ParseGasSetting(gasStr)
+	var gasSetting flags.GasSetting
+	dryRun, _ := flagSet.GetBool(flags.FlagDryRun)
+	printEIP712MsgType, _ := flagSet.GetBool(flags.FlagPrintEIP712MsgType)
+	if !dryRun && !printEIP712MsgType {
+		gasStr, _ := flagSet.GetString(flags.FlagGas)
+		gasSetting, _ = flags.ParseGasSetting(gasStr)
+	}
 
 	f := Factory{
 		txConfig:           clientCtx.TxConfig,
@@ -170,7 +180,7 @@ func (f Factory) WithFees(fees string) Factory {
 }
 
 // WithTips returns a copy of the Factory with an updated tip.
-func (f Factory) WithTips(tip string, tipper string) Factory {
+func (f Factory) WithTips(tip, tipper string) Factory {
 	parsedTips, err := sdk.ParseCoinsNormalized(tip)
 	if err != nil {
 		panic(err)
@@ -399,6 +409,60 @@ func (f Factory) PrintUnsignedTx(clientCtx client.Context, msgs ...sdk.Msg) erro
 	return clientCtx.PrintString(fmt.Sprintf("%s\n", json))
 }
 
+func (f Factory) PrintEIP712MsgType(clientCtx client.Context, msgs ...sdk.Msg) error {
+	unsignedTx, err := f.BuildUnsignedTx(msgs...)
+	if err != nil {
+		return err
+	}
+
+	txRawBytes, err := clientCtx.TxConfig.TxEncoder()(unsignedTx.GetTx())
+	if err != nil {
+		return err
+	}
+	txRawBytesHex := hex.EncodeToString(txRawBytes)
+
+	signerData := authsigning.SignerData{
+		Address: clientCtx.From,
+		ChainID: clientCtx.ChainID,
+	}
+
+	chainID, err := sdk.ParseChainID(clientCtx.ChainID)
+	if err != nil {
+		return fmt.Errorf("failed to parse chainID: %s", err)
+	}
+	msgTypes, signDoc, err := authtx.GetMsgTypes(signerData, unsignedTx.GetTx(), chainID)
+	if err != nil {
+		return fmt.Errorf("failed to get msg types: %s", err)
+	}
+	typedData, err := authtx.WrapTxToTypedData(chainID.Uint64(), signDoc, msgTypes)
+	if err != nil {
+		return fmt.Errorf("failed to wrap tx to typedData: %s", err)
+	}
+
+	msgData := make(map[string]interface{})
+	for i := 1; i <= len(msgs); i++ {
+		msgData[fmt.Sprintf("msg%d", i)] = typedData.Message[fmt.Sprintf("msg%d", i)]
+	}
+
+	type EIP712TypedData struct {
+		EIP712MessageType apitypes.Types         `json:"EIP712MessageType"`
+		MessageData       map[string]interface{} `json:"MessageData"`
+		TxRawBytes        string                 `json:"TxRawBytes"`
+	}
+
+	eip712TypedData := EIP712TypedData{
+		EIP712MessageType: typedData.Types,
+		MessageData:       msgData,
+		TxRawBytes:        txRawBytesHex,
+	}
+	bz, err := json.MarshalIndent(eip712TypedData, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return clientCtx.PrintString(fmt.Sprintf("%s\n", bz))
+}
+
 // BuildSimTx creates an unsigned tx with an empty single signature and returns
 // the encoded transaction or an error if the unsigned transaction cannot be
 // built.
@@ -437,7 +501,7 @@ func (f Factory) BuildSimTx(msgs ...sdk.Msg) ([]byte, error) {
 func (f Factory) getSimPK() (cryptotypes.PubKey, error) {
 	var (
 		ok bool
-		pk cryptotypes.PubKey = &secp256k1.PubKey{} // use default public key type
+		pk cryptotypes.PubKey = &ethsecp256k1.PubKey{} // use default public key type
 	)
 
 	// Use the first element from the list of keys in order to generate a valid

@@ -68,7 +68,7 @@ func TestABCI_InitChain(t *testing.T) {
 	})
 
 	// initChain is nil - nothing happens
-	app.InitChain(abci.RequestInitChain{ChainId: "greenfield_9000-1"})
+	app.InitChain(abci.RequestInitChain{ChainId: "mechain_1000000-1"})
 	res := app.Query(query)
 	require.Equal(t, 0, len(res.Value))
 
@@ -80,7 +80,7 @@ func TestABCI_InitChain(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, int64(0), app.LastBlockHeight())
 
-	initChainRes := app.InitChain(abci.RequestInitChain{AppStateBytes: []byte("{}"), ChainId: "greenfield_9000-1"}) // must have valid JSON genesis file, even if empty
+	initChainRes := app.InitChain(abci.RequestInitChain{AppStateBytes: []byte("{}"), ChainId: "mechain_1000000-1"}) // must have valid JSON genesis file, even if empty
 
 	// The AppHash returned by a new chain is the sha256 hash of "".
 	// $ echo -n '' | sha256sum
@@ -93,10 +93,10 @@ func TestABCI_InitChain(t *testing.T) {
 
 	// assert that chainID is set correctly in InitChain
 	chainID := getDeliverStateCtx(app).ChainID()
-	require.Equal(t, "greenfield_9000-1", chainID, "ChainID in deliverState not set correctly in InitChain")
+	require.Equal(t, "mechain_1000000-1", chainID, "ChainID in deliverState not set correctly in InitChain")
 
 	chainID = getCheckStateCtx(app).ChainID()
-	require.Equal(t, "greenfield_9000-1", chainID, "ChainID in checkState not set correctly in InitChain")
+	require.Equal(t, "mechain_1000000-1", chainID, "ChainID in checkState not set correctly in InitChain")
 
 	app.Commit()
 	res = app.Query(query)

@@ -136,6 +136,31 @@ func (rs *Store) GetStoreType() types.StoreType {
 	return types.StoreTypeMulti
 }
 
+// MigrateStores will migrate stores to another type in another db.
+func (rs *Store) MigrateStores(targetType types.StoreType, newDb dbm.DB) error {
+	if targetType != types.StoreTypeDB {
+		return errors.New("only StoreTypeDB is supported")
+	}
+
+	for key, store := range rs.stores {
+		switch store.GetStoreType() {
+		case types.StoreTypeIAVL:
+			rs.logger.Info("Migrating IAVL store", "store name", key.Name())
+			iterator := store.Iterator(nil, nil)
+			for ; iterator.Valid(); iterator.Next() {
+				prefixKey := append([]byte("s/k:"+key.Name()+"/"), iterator.Key()...)
+				if err := newDb.SetSync(prefixKey, iterator.Value()); err != nil {
+					return err
+				}
+			}
+			_ = iterator.Close()
+		default:
+
+		}
+	}
+	return nil
+}
+
 // MountStoreWithDB implements CommitMultiStore.
 func (rs *Store) MountStoreWithDB(key types.StoreKey, typ types.StoreType, db dbm.DB) {
 	if key == nil {
@@ -496,23 +521,6 @@ func (rs *Store) CacheMultiStore() types.CacheMultiStore {
 	return cachemulti.NewStore(rs.db, stores, rs.keysByName, rs.traceWriter, rs.getTracingContext())
 }
 
-func (rs *Store) DeepCopyMultiStore() types.CacheMultiStore {
-	stores := make(map[types.StoreKey]types.CacheWrapper)
-	for k, v := range rs.stores {
-		var storeCache *cache.CommitKVStoreCache
-		if store, ok := v.(*cache.CommitKVStoreCache); ok {
-			if iavlStore, ok := store.CommitKVStore.(*iavl.Store); ok {
-				tree := iavlStore.CloneMutableTree()
-				if tree != nil {
-					storeCache = cache.NewCommitKVStoreCache(iavl.UnsafeNewStore(tree), 1000)
-				}
-			}
-		}
-		stores[k] = storeCache
-	}
-	return cachemulti.NewStore(rs.db, stores, rs.keysByName, rs.traceWriter, rs.getTracingContext())
-}
-
 // CacheMultiStoreWithVersion is analogous to CacheMultiStore except that it
 // attempts to load stores at a given version (height). An error is returned if
 // any store cannot be loaded. This should only be used for querying and
@@ -571,6 +579,75 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 	}
 
 	return cachemulti.NewStore(rs.db, cachedStores, rs.keysByName, rs.traceWriter, rs.getTracingContext()), nil
+}
+
+func (rs *Store) DeepCopyAndCache() types.CacheMultiStore {
+	stores := make(map[types.StoreKey]types.CacheWrapper)
+	for k, v := range rs.stores {
+		if store, ok := v.(*cache.CommitKVStoreCache); ok {
+			if iavlStore, ok := store.CommitKVStore.(*iavl.Store); ok {
+				tree := iavlStore.CloneMutableTree()
+				if tree != nil {
+					stores[k] = cache.NewCommitKVStoreCache(iavl.UnsafeNewStore(tree), 1000).CommitKVStore
+				}
+			}
+		} else if store, ok := v.(*iavl.Store); ok {
+			tree := store.CloneMutableTree()
+			if tree != nil {
+				stores[k] = cache.NewCommitKVStoreCache(iavl.UnsafeNewStore(tree), 1000).CommitKVStore
+			}
+		} else if _, ok := v.(*transient.Store); ok {
+			stores[k] = transient.NewStore()
+		} else if dbStore, ok := v.(commitDBStoreAdapter); ok {
+			stores[k] = cache.NewCommitKVStoreCache(commitDBStoreAdapter{Store: dbadapter.Store{DB: dbStore.Store.DB}}, 1000).CommitKVStore
+		}
+	}
+	return cachemulti.NewStore(rs.db, stores, rs.keysByName, rs.traceWriter, rs.getTracingContext())
+}
+
+func (rs *Store) DeepCopy() *Store {
+	stores := make(map[types.StoreKey]types.CommitKVStore)
+	for k, v := range rs.stores {
+		if store, ok := v.(*cache.CommitKVStoreCache); ok {
+			if iavlStore, ok := store.CommitKVStore.(*iavl.Store); ok {
+				tree := iavlStore.CloneMutableTree()
+				if tree != nil {
+					stores[k] = cache.NewCommitKVStoreCache(iavl.UnsafeNewStore(tree), 1000).CommitKVStore
+				}
+			}
+		} else if store, ok := v.(*iavl.Store); ok {
+			tree := store.CloneMutableTree()
+			if tree != nil {
+				stores[k] = cache.NewCommitKVStoreCache(iavl.UnsafeNewStore(tree), 1000).CommitKVStore
+			}
+		} else if _, ok := v.(*transient.Store); ok {
+			stores[k] = transient.NewStore()
+		} else if dbStore, ok := v.(commitDBStoreAdapter); ok {
+			stores[k] = cache.NewCommitKVStoreCache(commitDBStoreAdapter{Store: dbadapter.Store{DB: dbStore.Store.DB}}, 1000).CommitKVStore
+		}
+	}
+
+	storesParams := make(map[types.StoreKey]storeParams)
+	for k, v := range rs.storesParams {
+		storesParams[k] = v
+	}
+
+	keysByName := make(map[string]types.StoreKey)
+	for k, v := range rs.keysByName {
+		keysByName[k] = v
+	}
+
+	return &Store{
+		db:                  rs.db,
+		iavlCacheSize:       rs.iavlCacheSize,
+		iavlDisableFastNode: true,
+		storesParams:        storesParams,
+		stores:              stores,
+		keysByName:          keysByName,
+		listeners:           make(map[types.StoreKey][]types.WriteListener),
+		removalMap:          make(map[types.StoreKey]bool),
+		pruningManager:      pruning.NewManager(rs.db, rs.logger),
+	}
 }
 
 // GetStore returns a mounted Store for a given StoreKey. If the StoreKey does
@@ -1196,4 +1273,35 @@ func flushLatestVersion(batch dbm.Batch, version int64) {
 	}
 
 	batch.Set([]byte(latestVersionKey), bz)
+}
+
+// MigrateCommitInfos will migrate commit infos to another db.
+func MigrateCommitInfos(oldDb, newDb dbm.DB) (int64, error) {
+	bz, err := oldDb.Get([]byte(latestVersionKey))
+	if err != nil {
+		return 0, errors.New("fail to read the latest version")
+	}
+	if err = newDb.SetSync([]byte(latestVersionKey), bz); err != nil {
+		return 0, err
+	}
+
+	version := GetLatestVersion(oldDb)
+	bz, err = oldDb.Get([]byte(fmt.Sprintf(commitInfoKeyFmt, version)))
+	if bz == nil {
+		return 0, errors.New("fail to read the latest commit info")
+	}
+	if err != nil {
+		return 0, err
+	}
+	if err = newDb.SetSync([]byte(fmt.Sprintf(commitInfoKeyFmt, version)), bz); err != nil {
+		return 0, err
+	}
+
+	// ignore the errors for saving old commit info
+	bz, _ = oldDb.Get([]byte(fmt.Sprintf(commitInfoKeyFmt, version-1)))
+	if bz != nil {
+		_ = newDb.SetSync([]byte(fmt.Sprintf(commitInfoKeyFmt, version-1)), bz)
+	}
+
+	return version, nil
 }

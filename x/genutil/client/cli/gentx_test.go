@@ -93,22 +93,22 @@ func (s *CLITestSuite) TestGenTxCmd() {
 		{
 			name: "invalid pubkey",
 			args: []string{
-				fmt.Sprintf("--%s=%s", flags.FlagChainID, "greenfield_9000-1"),
+				fmt.Sprintf("--%s=%s", flags.FlagChainID, "mechain_1000000-1"),
 				fmt.Sprintf("--%s={\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"}", stakingcli.FlagPubKey),
 				"node0",
 				amount.String(),
 			},
-			expCmdOutput: fmt.Sprintf("--%s=greenfield_9000-1 --%s={\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"} %s %s ", flags.FlagChainID, stakingcli.FlagPubKey, "node0", amount.String()),
+			expCmdOutput: fmt.Sprintf("--%s=mechain_1000000-1 --%s={\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"} %s %s ", flags.FlagChainID, stakingcli.FlagPubKey, "node0", amount.String()),
 		},
 		{
 			name: "valid pubkey flag",
 			args: []string{
-				fmt.Sprintf("--%s=%s", flags.FlagChainID, "greenfield_9000-1"),
+				fmt.Sprintf("--%s=%s", flags.FlagChainID, "mechain_1000000-1"),
 				fmt.Sprintf("--%s={\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"}", stakingcli.FlagPubKey),
 				"node0",
 				amount.String(),
 			},
-			expCmdOutput: fmt.Sprintf("--%s=greenfield_9000-1 --%s={\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"} %s %s ", flags.FlagChainID, stakingcli.FlagPubKey, "node0", amount.String()),
+			expCmdOutput: fmt.Sprintf("--%s=mechain_1000000-1 --%s={\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"} %s %s ", flags.FlagChainID, stakingcli.FlagPubKey, "node0", amount.String()),
 		},
 	}
 
