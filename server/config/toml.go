@@ -31,6 +31,10 @@ pruning = "{{ .BaseConfig.Pruning }}"
 pruning-keep-recent = "{{ .BaseConfig.PruningKeepRecent }}"
 pruning-interval = "{{ .BaseConfig.PruningInterval }}"
 
+# everything: all events will be emitted
+# nothing: no events will be emitted.
+eventing = "{{ .BaseConfig.Eventing }}"
+
 # HaltHeight contains a non-zero block height at which a node will gracefully
 # halt and shutdown that can be used to assist upgrades and testing.
 #
@@ -86,6 +90,16 @@ iavl-lazy-loading = {{ .BaseConfig.IAVLLazyLoading }}
 # First fallback is the deprecated compile-time types.DBBackend value.
 # Second fallback (if the types.DBBackend also isn't set), is the db-backend value set in Tendermint's config.toml.
 app-db-backend = "{{ .BaseConfig.AppDBBackend }}"
+
+# EnableUnsafeQuery enables or disables the unsafe queries.
+# Default is false.
+enable-unsafe-query = "{{ .BaseConfig.EnableUnsafeQuery }}"
+
+# EnablePlainStore enables or disables the plain store. If it is true, then plain store will be used, not IAVL store.
+# Do not enable it on validator nodes or other nodes which require high security level.
+# If you enable it, please also enable skip_app_hash config in config.toml file.
+# Default is false.
+enable-plain-store = "{{ .BaseConfig.EnablePlainStore }}"
 
 ###############################################################################
 ###                           Upgrade Configuration                         ###
@@ -164,42 +178,6 @@ rpc-max-body-bytes = {{ .API.RPCMaxBodyBytes }}
 
 # EnableUnsafeCORS defines if CORS should be enabled (unsafe - use it at your own risk).
 enabled-unsafe-cors = {{ .API.EnableUnsafeCORS }}
-
-###############################################################################
-###                           Rosetta Configuration                         ###
-###############################################################################
-
-[rosetta]
-
-# Enable defines if the Rosetta API server should be enabled.
-enable = {{ .Rosetta.Enable }}
-
-# Address defines the Rosetta API server to listen on.
-address = "{{ .Rosetta.Address }}"
-
-# Network defines the name of the blockchain that will be returned by Rosetta.
-blockchain = "{{ .Rosetta.Blockchain }}"
-
-# Network defines the name of the network that will be returned by Rosetta.
-network = "{{ .Rosetta.Network }}"
-
-# Retries defines the number of retries when connecting to the node before failing.
-retries = {{ .Rosetta.Retries }}
-
-# Offline defines if Rosetta server should run in offline mode.
-offline = {{ .Rosetta.Offline }}
-
-# EnableDefaultSuggestedFee defines if the server should suggest fee by default.
-# If 'construction/medata' is called without gas limit and gas price,
-# suggested fee based on gas-to-suggest and denom-to-suggest will be given.
-enable-fee-suggestion = {{ .Rosetta.EnableFeeSuggestion }}
-
-# GasToSuggest defines gas limit when calculating the fee
-gas-to-suggest = {{ .Rosetta.GasToSuggest }}
-
-# DenomToSuggest defines the defult denom for fee suggestion.
-# Price must be in minimum-gas-prices.
-denom-to-suggest = "{{ .Rosetta.DenomToSuggest }}"
 
 ###############################################################################
 ###                           gRPC Configuration                            ###

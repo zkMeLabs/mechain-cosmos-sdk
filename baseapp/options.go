@@ -24,6 +24,11 @@ func SetPruning(opts pruningtypes.PruningOptions) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetPruning(opts) }
 }
 
+// SetEventing sets an eventing option on the event manager with the app
+func SetEventing(eventingStr string) func(*BaseApp) {
+	return func(bapp *BaseApp) { sdk.SetEventingOption(eventingStr) }
+}
+
 // SetMinGasPrices returns an option that sets the minimum gas prices on the app.
 func SetMinGasPrices(gasPricesStr string) func(*BaseApp) {
 	gasPrices, err := sdk.ParseDecCoins(gasPricesStr)
@@ -95,6 +100,16 @@ func SetMempool(mempool mempool.Mempool) func(*BaseApp) {
 // SetChainID sets the chain ID in BaseApp.
 func SetChainID(chainID string) func(*BaseApp) {
 	return func(app *BaseApp) { app.chainID = chainID }
+}
+
+// SetEnableUnsafeQuery sets the flag to enable unsafe query in BaseApp.
+func SetEnableUnsafeQuery(enabled bool) func(*BaseApp) {
+	return func(app *BaseApp) { app.enableUnsafeQuery = enabled }
+}
+
+// SetEnablePlainStore sets the flag to enable plain store in BaseApp.
+func SetEnablePlainStore(enabled bool) func(*BaseApp) {
+	return func(app *BaseApp) { app.enablePlainStore = enabled }
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -261,13 +276,6 @@ func (app *BaseApp) SetTxDecoder(txDecoder sdk.TxDecoder) {
 // SetTxEncoder sets the TxEncoder if it wasn't provided in the BaseApp constructor.
 func (app *BaseApp) SetTxEncoder(txEncoder sdk.TxEncoder) {
 	app.txEncoder = txEncoder
-}
-
-// SetQueryMultiStore set a alternative MultiStore implementation to support grpc query service.
-//
-// Ref: https://github.com/cosmos/cosmos-sdk/issues/13317
-func (app *BaseApp) SetQueryMultiStore(ms sdk.MultiStore) {
-	app.qms = ms
 }
 
 // SetMempool sets the mempool for the BaseApp and is required for the app to start up.

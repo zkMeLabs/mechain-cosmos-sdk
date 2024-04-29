@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -57,7 +58,6 @@ type BaseApp struct { //nolint: maligned
 	name              string               // application name from abci.Info
 	db                dbm.DB               // common DB backend
 	cms               sdk.CommitMultiStore // Main (uncached) state
-	qms               sdk.MultiStore       // Optional alternative multistore for querying only.
 	storeLoader       StoreLoader          // function to handle store loading, may be overridden with SetStoreLoader()
 	grpcQueryRouter   *GRPCQueryRouter     // router for redirecting gRPC query calls
 	ethQueryRouter    *EthQueryRouter      // router for redirecting eth query calls
@@ -91,6 +91,12 @@ type BaseApp struct { //nolint: maligned
 	prepareProposalState *state // for PrepareProposal
 
 	preDeliverStates []*state // for PreDeliverTx
+
+	// queryState is set on InitChain and BeginBlock
+	queryState *queryState // optional alternative multistore for querying only.
+
+	queryStateMtx sync.RWMutex // mutex for queryState
+	checkStateMtx sync.RWMutex // mutex for checkState
 
 	// an inter-block write-through cache provided to the context during deliverState
 	interBlockCache sdk.MultiStorePersistentCache
@@ -156,8 +162,14 @@ type BaseApp struct { //nolint: maligned
 	// upgradeChecker is a hook function from the upgrade module to check upgrade is executed or not.
 	upgradeChecker func(ctx sdk.Context, name string) bool
 
-	// Signatures of recent blocks to speed up
+	// sigCache caches the signatures of recent blocks to speed up
 	sigCache *lru.ARCCache
+
+	// enableUnsafeQuery defines whether the unsafe queries will be enabled or not
+	enableUnsafeQuery bool
+
+	// enablePlainStore defines whether uses plain db store type or not
+	enablePlainStore bool
 }
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
@@ -180,6 +192,8 @@ func NewBaseApp(
 		txDecoder:        txDecoder,
 		fauxMerkleMode:   false,
 		preDeliverStates: make([]*state, 0),
+		checkStateMtx:    sync.RWMutex{},
+		queryStateMtx:    sync.RWMutex{},
 	}
 
 	for _, option := range options {
@@ -278,7 +292,7 @@ func (app *BaseApp) MountStores(keys ...storetypes.StoreKey) {
 	for _, key := range keys {
 		switch key.(type) {
 		case *storetypes.KVStoreKey:
-			if !app.fauxMerkleMode {
+			if app.IsIavlStore() {
 				app.MountStore(key, storetypes.StoreTypeIAVL)
 			} else {
 				// StoreTypeDB doesn't do anything upon commit, and it doesn't
@@ -302,7 +316,7 @@ func (app *BaseApp) MountStores(keys ...storetypes.StoreKey) {
 // BaseApp multistore.
 func (app *BaseApp) MountKVStores(keys map[string]*storetypes.KVStoreKey) {
 	for _, key := range keys {
-		if !app.fauxMerkleMode {
+		if app.IsIavlStore() {
 			app.MountStore(key, storetypes.StoreTypeIAVL)
 		} else {
 			// StoreTypeDB doesn't do anything upon commit, and it doesn't
@@ -400,6 +414,7 @@ func (app *BaseApp) Init() error {
 	emptyHeader := tmproto.Header{ChainID: app.chainID}
 
 	// needed for the export command which inits from store but never calls initchain
+	app.setQueryState(emptyHeader)
 	app.setState(runTxModeCheck, emptyHeader)
 	app.Seal()
 
@@ -448,6 +463,9 @@ func (app *BaseApp) Seal() { app.sealed = true }
 // IsSealed returns true if the BaseApp is sealed and false otherwise.
 func (app *BaseApp) IsSealed() bool { return app.sealed }
 
+// IsIavlStore returns whether IAVL store is used.
+func (app *BaseApp) IsIavlStore() bool { return !app.enablePlainStore && !app.fauxMerkleMode }
+
 // setState sets the BaseApp's state for the corresponding mode with a branched
 // multi-store (i.e., a CacheMultiStore) and a new Context with the same
 // multi-store branch, and provided header.
@@ -461,8 +479,15 @@ func (app *BaseApp) setState(mode runTxMode, header tmproto.Header) {
 	switch mode {
 	case runTxModeCheck:
 		// Minimum gas prices are also set. It is set on InitChain and reset on Commit.
-		baseState.ctx = baseState.ctx.WithIsCheckTx(true).WithMinGasPrices(app.minGasPrices)
-		app.checkState = baseState
+		var ms sdk.CacheMultiStore
+		if rs, ok := app.cms.(*rootmulti.Store); ok {
+			ms = rs.DeepCopyAndCache()
+			baseState.ms = ms
+			baseState.ctx = baseState.ctx.WithIsCheckTx(true).WithMinGasPrices(app.minGasPrices).WithMultiStore(ms)
+			app.checkState = baseState
+		} else {
+			panic(fmt.Sprintf("set checkState failed: %T is not rootmulti.Store", app.cms))
+		}
 	case runTxModeDeliver:
 		// It is set on InitChain and BeginBlock and set to nil on Commit.
 		app.deliverState = baseState
@@ -483,7 +508,7 @@ func (app *BaseApp) setPreState(number int64, header tmproto.Header) {
 	for i := int64(0); i < number; i++ {
 		var ms sdk.CacheMultiStore
 		if _, ok := app.cms.(*rootmulti.Store); ok {
-			ms = app.cms.(*rootmulti.Store).DeepCopyMultiStore()
+			ms = app.cms.(*rootmulti.Store).DeepCopyAndCache()
 		}
 
 		baseState := &state{
@@ -492,6 +517,19 @@ func (app *BaseApp) setPreState(number int64, header tmproto.Header) {
 		}
 		app.preDeliverStates = append(app.preDeliverStates, baseState)
 	}
+}
+
+func (app *BaseApp) setQueryState(header tmproto.Header) {
+	var ms sdk.CommitMultiStore
+	if rs, ok := app.cms.(*rootmulti.Store); ok {
+		ms = rs.DeepCopy()
+	}
+
+	baseState := &queryState{
+		ms:  ms,
+		ctx: sdk.NewContext(ms, header, false, app.upgradeChecker, app.logger),
+	}
+	app.queryState = baseState
 }
 
 // GetConsensusParams returns the current consensus parameters from the BaseApp's
@@ -599,6 +637,23 @@ func validateBasicTxMsgs(msgs []sdk.Msg) error {
 	return nil
 }
 
+// validateRuntimeTxMsgs executes basic runtime validator calls for messages.
+func validateRuntimeTxMsgs(ctx sdk.Context, msgs []sdk.Msg) error {
+	if len(msgs) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must contain at least one message")
+	}
+
+	for _, msg := range msgs {
+		if runtimeMsg, ok := msg.(sdk.MsgWithRuntimeValidation); ok {
+			if err := runtimeMsg.ValidateRuntime(ctx); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // Returns the application's deliverState if app is in runTxModeDeliver,
 // prepareProposalState if app is in runTxPrepareProposal, processProposalState
 // if app is in runTxProcessProposal, and checkState otherwise.
@@ -616,6 +671,12 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 	default:
 		return app.checkState
 	}
+}
+
+func (app *BaseApp) GetCheckState() *state {
+	app.checkStateMtx.RLock()
+	defer app.checkStateMtx.RUnlock()
+	return app.checkState
 }
 
 func (app *BaseApp) getBlockGasMeter(ctx sdk.Context) storetypes.GasMeter {
@@ -701,7 +762,7 @@ func (app *BaseApp) runTxOnContext(ctx sdk.Context, mode runTxMode, txBytes []by
 			err, result = processRecovery(r, recoveryMW), nil
 		}
 
-		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed(), MinGasPrice: gInfo.MinGasPrice}
+		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed(), MinGasPrice: gInfo.MinGasPrice, RwUsed: ctx.GasMeter().RwConsumed()}
 	}()
 
 	blockGasConsumed := false
@@ -744,6 +805,9 @@ func (app *BaseApp) runTxOnContext(ctx sdk.Context, mode runTxMode, txBytes []by
 
 	msgs := tx.GetMsgs()
 	if err := validateBasicTxMsgs(msgs); err != nil {
+		return sdk.GasInfo{}, nil, nil, 0, err
+	}
+	if err := validateRuntimeTxMsgs(ctx, msgs); err != nil {
 		return sdk.GasInfo{}, nil, nil, 0, err
 	}
 
@@ -900,7 +964,8 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(i), msgResult.Log, msgEvents))
 	}
 
-	data, err := makeABCIData(msgResponses)
+	rwUsedBz := sdk.Uint64ToBigEndian(ctx.GasMeter().RwConsumed())
+	data, err := makeABCIData(msgResponses, rwUsedBz)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to marshal tx data")
 	}
@@ -914,8 +979,8 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 }
 
 // makeABCIData generates the Data field to be sent to ABCI Check/DeliverTx.
-func makeABCIData(msgResponses []*codectypes.Any) ([]byte, error) {
-	return proto.Marshal(&sdk.TxMsgData{MsgResponses: msgResponses})
+func makeABCIData(msgResponses []*codectypes.Any, extraDate []byte) ([]byte, error) {
+	return proto.Marshal(&sdk.TxMsgData{MsgResponses: msgResponses, ExtraData: extraDate})
 }
 
 func createEvents(events sdk.Events, msg sdk.Msg) sdk.Events {

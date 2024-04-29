@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	lru "github.com/hashicorp/golang-lru"
 
+	"github.com/cosmos/cosmos-sdk/store/gaskv"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 )
 
@@ -44,6 +45,7 @@ type Context struct {
 	upgradeChecker       func(ctx Context, name string) bool
 	txSize               uint64 // The tx bytes length
 	sigCache             *lru.ARCCache
+	enableUnsafeQuery    bool
 }
 
 // Proposed rename, not done to avoid API breakage
@@ -74,6 +76,10 @@ func (c Context) IsUpgraded(name string) bool {
 		return false
 	}
 	return c.upgradeChecker(c, name)
+}
+
+func (c Context) IsEnableUnsafeQuery() bool {
+	return c.enableUnsafeQuery
 }
 
 // clone the header before returning
@@ -279,6 +285,12 @@ func (c Context) WithSigCache(cache *lru.ARCCache) Context {
 	return c
 }
 
+// WithEnableUnsafeQuery returns a Context with unsafe query enabled
+func (c Context) WithEnableUnsafeQuery(enabled bool) Context {
+	c.enableUnsafeQuery = enabled
+	return c
+}
+
 // TODO: remove???
 func (c Context) IsZero() bool {
 	return c.ms == nil
@@ -301,16 +313,25 @@ func (c Context) Value(key interface{}) interface{} {
 // Store / Caching
 // ----------------------------------------------------------------------------
 
+// KVStoreWithZeroRead fetches a KVStore from the MultiStore.
+func (c Context) KVStoreWithZeroRead(key storetypes.StoreKey) storetypes.KVStore {
+	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, storetypes.KVGasConfigAfterNagqu())
+}
+
 // KVStore fetches a KVStore from the MultiStore.
-// Remove gas metering
 func (c Context) KVStore(key storetypes.StoreKey) storetypes.KVStore {
-	return c.MultiStore().GetKVStore(key)
+	if c.upgradeChecker != nil && c.upgradeChecker(c, Nagqu) {
+		return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, storetypes.KVGasConfigAfterNagqu())
+	}
+	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, c.kvGasConfig)
 }
 
 // TransientStore fetches a TransientStore from the MultiStore.
-// Remove gas metering
 func (c Context) TransientStore(key storetypes.StoreKey) storetypes.KVStore {
-	return c.MultiStore().GetKVStore(key)
+	if c.upgradeChecker != nil && c.upgradeChecker(c, Nagqu) {
+		return c.MultiStore().GetKVStore(key)
+	}
+	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, c.kvGasConfig)
 }
 
 // CacheContext returns a new Context with the multi-store cached and a new

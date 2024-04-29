@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cometbft/cometbft/crypto/tmhash"
 	"github.com/prysmaticlabs/prysm/crypto/bls"
 	"github.com/stretchr/testify/suite"
 
@@ -53,6 +54,8 @@ func (s *E2ETestSuite) TestGenTxCmd() {
 	amount := sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(12))
 	blsSecretKey, _ := bls.RandKey()
 	blsPk := hex.EncodeToString(blsSecretKey.PublicKey().Marshal())
+	blsProofBuf := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()))
+	blsProof := hex.EncodeToString(blsProofBuf.Marshal())
 
 	tests := []struct {
 		name     string
@@ -64,8 +67,8 @@ func (s *E2ETestSuite) TestGenTxCmd() {
 			args: []string{
 				fmt.Sprintf("--%s=%s", flags.FlagChainID, s.network.Config.ChainID),
 				fmt.Sprintf("--%s=1", stakingcli.FlagCommissionRate),
-				val.Moniker,
 				amount.String(),
+				val.Address.String(),
 				val.Address.String(),
 				val.Address.String(),
 				val.Address.String(),
@@ -77,12 +80,13 @@ func (s *E2ETestSuite) TestGenTxCmd() {
 			name: "valid gentx",
 			args: []string{
 				fmt.Sprintf("--%s=%s", flags.FlagChainID, s.network.Config.ChainID),
-				val.Moniker,
 				amount.String(),
 				val.Address.String(),
 				val.Address.String(),
 				val.Address.String(),
+				val.Address.String(),
 				blsPk,
+				blsProof,
 			},
 			expError: false,
 		},
@@ -91,12 +95,13 @@ func (s *E2ETestSuite) TestGenTxCmd() {
 			args: []string{
 				fmt.Sprintf("--%s=%s", flags.FlagChainID, s.network.Config.ChainID),
 				fmt.Sprintf("--%s={\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"}", stakingcli.FlagPubKey),
-				val.Moniker,
 				amount.String(),
 				val.Address.String(),
 				val.Address.String(),
 				val.Address.String(),
+				val.Address.String(),
 				blsPk,
+				blsProof,
 			},
 			expError: true,
 		},
@@ -105,12 +110,13 @@ func (s *E2ETestSuite) TestGenTxCmd() {
 			args: []string{
 				fmt.Sprintf("--%s=%s", flags.FlagChainID, s.network.Config.ChainID),
 				fmt.Sprintf("--%s={\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"}", stakingcli.FlagPubKey),
-				val.Moniker,
 				amount.String(),
 				val.Address.String(),
 				val.Address.String(),
 				val.Address.String(),
+				val.Address.String(),
 				blsPk,
+				blsProof,
 			},
 			expError: false,
 		},

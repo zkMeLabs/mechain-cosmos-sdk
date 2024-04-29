@@ -13,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const DefaultChainId = "greenfield_9000-1"
+const DefaultChainId = "mechain_1000000-1"
 
 // DefaultContext creates a sdk.Context with a fresh MemDB that can be used in tests.
 func DefaultContext(key storetypes.StoreKey, tkey storetypes.StoreKey) sdk.Context {

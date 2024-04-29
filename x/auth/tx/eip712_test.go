@@ -32,7 +32,7 @@ func TestEIP712Handler(t *testing.T) {
 	txConfig := NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_EIP_712})
 	txBuilder := txConfig.NewTxBuilder()
 
-	chainID := "greenfield_9000"
+	chainID := "mechain_1000000"
 	testMemo := "some test memo"
 	testMsg := banktypes.NewMsgSend(addr, addr, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(1))))
 	accNum, accSeq := uint64(1), uint64(2)
@@ -81,7 +81,7 @@ func TestEIP712Handler(t *testing.T) {
 	require.EqualError(t, err, fmt.Sprintf("failed to parse chainID: %s", signingData.ChainID))
 
 	t.Log("verify GetSignBytes correct")
-	signingData.ChainID = "greenfield_9000-1"
+	signingData.ChainID = "mechain_1000000-1"
 	signBytes, err := modeHandler.GetSignBytes(signingtypes.SignMode_SIGN_MODE_EIP_712, signingData, txBuilder.GetTx())
 	require.NoError(t, err)
 	require.NotNil(t, signBytes)
@@ -142,7 +142,7 @@ func TestMoreMsgs(t *testing.T) {
 	txConfig := NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_EIP_712})
 	txBuilder := txConfig.NewTxBuilder()
 
-	chainID := "greenfield_9000-1"
+	chainID := "mechain_1000000-1"
 	testMemo := "some test memo"
 	accNum, accSeq := uint64(1), uint64(2)
 
@@ -248,7 +248,7 @@ func TestMultiMsgs(t *testing.T) {
 	txConfig := NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_EIP_712})
 	txBuilder := txConfig.NewTxBuilder()
 
-	chainID := "greenfield_9000-1"
+	chainID := "mechain_1000000-1"
 	testMemo := "some test memo"
 	accNum, accSeq := uint64(1), uint64(2)
 

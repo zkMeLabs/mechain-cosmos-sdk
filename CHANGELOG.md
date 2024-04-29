@@ -3,7 +3,7 @@
 ## v0.0.2
 This is a maintenance release. The changelog includes all the changes since v0.47.3-mechain.
 
-* chore: introduce the greenfiled-cosmos-sdk v0.2.2 upgrade(except bsc crosschain oracle)
+* chore: introduce the greenfiled-cosmos-sdk v0.0.0-20240408055344-9b8b942c1b1a upgrade(except bsc crosschain oracle)
 
 ## v0.47.3-mechain
 This is a maintenance release. The changelog includes all the changes since v0.47.2-mechain.
