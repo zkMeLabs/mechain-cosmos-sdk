@@ -1,6 +1,6 @@
 go 1.20
 
-module github.com/zkMeLabs/mechain-cosmos-sdk
+module github.com/cosmos/cosmos-sdk
 
 require (
 	cosmossdk.io/api v0.4.0
@@ -22,7 +22,6 @@ require (
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/btcutil v1.0.5
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
-	github.com/cosmos/cosmos-sdk v0.47.3
 	github.com/cosmos/cosmos-sdk/db v1.0.0-beta.1.0.20220726092710-f848e4300a8a
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogogateway v1.2.0
@@ -62,6 +61,7 @@ require (
 	github.com/tendermint/tendermint v0.35.9
 	github.com/tidwall/btree v1.6.0
 	github.com/wealdtech/go-eth2-util v1.6.3
+	github.com/willf/bitset v1.1.3
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea
 	golang.org/x/text v0.14.0
