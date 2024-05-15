@@ -1,6 +1,6 @@
 go 1.20
 
-module github.com/zkMeLabs/mechain-cosmos-sdk
+module github.com/cosmos/cosmos-sdk
 
 require (
 	cosmossdk.io/api v0.4.0
@@ -22,7 +22,6 @@ require (
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/btcutil v1.0.5
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
-	github.com/cosmos/cosmos-sdk v0.47.3
 	github.com/cosmos/cosmos-sdk/db v1.0.0-beta.1.0.20220726092710-f848e4300a8a
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogogateway v1.2.0
@@ -172,7 +171,6 @@ replace (
 
 	github.com/cometbft/cometbft => github.com/bnb-chain/greenfield-cometbft v1.3.0
 	github.com/cometbft/cometbft-db => github.com/bnb-chain/greenfield-cometbft-db v0.8.1-alpha.1
-	github.com/cosmos/cosmos-sdk => ./
 	github.com/cosmos/iavl => github.com/bnb-chain/greenfield-iavl v0.20.1
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
