@@ -309,3 +309,23 @@ func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
 	authority, _ := sdk.AccAddressFromHexUnsafe(msg.Authority)
 	return []sdk.AccAddress{authority}
 }
+
+// ValidateBasic implements the sdk.Msg interface.
+func (msg MsgUpdateCrossChainParams) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromHexUnsafe(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+	return msg.Params.ValidateBasic()
+}
+
+// GetSignBytes returns the message bytes to sign over.
+func (msg MsgUpdateCrossChainParams) GetSignBytes() []byte {
+	bz := codec.ModuleCdc.MustMarshalJSON(&msg)
+	return sdk.MustSortJSON(bz)
+}
+
+// GetSigners returns the expected signers for a MsgUpdateCrossChainParams.
+func (msg MsgUpdateCrossChainParams) GetSigners() []sdk.AccAddress {
+	authority, _ := sdk.AccAddressFromHexUnsafe(msg.Authority)
+	return []sdk.AccAddress{authority}
+}
