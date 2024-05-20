@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -169,22 +170,38 @@ func MustAccAddressFromHex(address string) AccAddress {
 // Note, this function is considered unsafe as it may produce an AccAddress from
 // otherwise invalid input, such as a transaction hash.
 func AccAddressFromHexUnsafe(address string) (AccAddress, error) {
-	if len(address) == 0 {
-		return AccAddress{}, ErrEmptyHexAddress
+	if len(strings.TrimSpace(address)) == 0 {
+		return AccAddress{}, errors.New("empty address string is not allowed")
 	}
 
-	if len(address) >= 2 && address[0] == '0' && (address[1] == 'x' || address[1] == 'X') {
-		address = address[2:]
-	}
-	if len(address) != 2*EthAddressLength {
-		return AccAddress{}, fmt.Errorf("invalid address hex length: %v != %v", len(address), 2*EthAddressLength)
-	}
+	if address[0] == '0' {
+		if len(address) >= 2 && address[0] == '0' && (address[1] == 'x' || address[1] == 'X') {
+			address = address[2:]
+		}
+		if len(address) != 2*EthAddressLength {
+			return AccAddress{}, fmt.Errorf("invalid address hex length: %v != %v", len(address), 2*EthAddressLength)
+		}
 
-	bz, err := hex.DecodeString(address)
-	if err != nil {
-		return AccAddress{}, err
+		bz, err := hex.DecodeString(address)
+		if err != nil {
+			return AccAddress{}, err
+		}
+		return bz, nil
+	} else {
+		bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
+
+		bz, err := GetFromBech32(address, bech32PrefixAccAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		err = VerifyAddressFormat(bz)
+		if err != nil {
+			return nil, err
+		}
+
+		return bz, nil
 	}
-	return bz, nil
 }
 
 // VerifyAddressFormat verifies that the provided bytes form a valid address
