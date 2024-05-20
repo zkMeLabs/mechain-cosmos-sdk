@@ -170,11 +170,24 @@ func MustAccAddressFromHex(address string) AccAddress {
 // Note, this function is considered unsafe as it may produce an AccAddress from
 // otherwise invalid input, such as a transaction hash.
 func AccAddressFromHexUnsafe(address string) (AccAddress, error) {
-	if len(strings.TrimSpace(address)) == 0 {
-		return AccAddress{}, errors.New("empty address string is not allowed")
+	if len(address) == 0 {
+		return AccAddress{}, ErrEmptyHexAddress
 	}
 
-	if address[0] == '0' {
+	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
+	if strings.HasPrefix(address, bech32PrefixAccAddr) {
+		bz, err := GetFromBech32(address, bech32PrefixAccAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		err = VerifyAddressFormat(bz)
+		if err != nil {
+			return nil, err
+		}
+
+		return bz, nil
+	} else {
 		if len(address) >= 2 && address[0] == '0' && (address[1] == 'x' || address[1] == 'X') {
 			address = address[2:]
 		}
@@ -186,20 +199,6 @@ func AccAddressFromHexUnsafe(address string) (AccAddress, error) {
 		if err != nil {
 			return AccAddress{}, err
 		}
-		return bz, nil
-	} else {
-		bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
-
-		bz, err := GetFromBech32(address, bech32PrefixAccAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		err = VerifyAddressFormat(bz)
-		if err != nil {
-			return nil, err
-		}
-
 		return bz, nil
 	}
 }
