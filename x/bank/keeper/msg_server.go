@@ -10,7 +10,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 type msgServer struct {
@@ -46,10 +45,8 @@ func (k msgServer) Send(goCtx context.Context, msg *types.MsgSend) (*types.MsgSe
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", msg.ToAddress)
 	}
 
-	if ctx.IsUpgraded(upgradetypes.Nagqu) {
-		if k.PaymentKeeper != nil && k.PaymentKeeper.IsPaymentAccount(ctx, to) {
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "payment account %s is not allowed to receive funds", msg.ToAddress)
-		}
+	if k.PaymentKeeper != nil && k.PaymentKeeper.IsPaymentAccount(ctx, to) {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "payment account %s is not allowed to receive funds", msg.ToAddress)
 	}
 
 	err = k.SendCoins(ctx, from, to, msg.Amount)
@@ -82,7 +79,6 @@ func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*t
 		}
 	}
 
-	isUpgradeNagqu := ctx.IsUpgraded(upgradetypes.Nagqu)
 	for _, out := range msg.Outputs {
 		accAddr := sdk.MustAccAddressFromHex(out.Address)
 
@@ -90,10 +86,8 @@ func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*t
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", out.Address)
 		}
 
-		if isUpgradeNagqu {
-			if k.PaymentKeeper != nil && k.PaymentKeeper.IsPaymentAccount(ctx, accAddr) {
-				return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "payment account %s is not allowed to receive funds", accAddr)
-			}
+		if k.PaymentKeeper != nil && k.PaymentKeeper.IsPaymentAccount(ctx, accAddr) {
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "payment account %s is not allowed to receive funds", accAddr)
 		}
 	}
 

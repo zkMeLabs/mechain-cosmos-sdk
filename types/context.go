@@ -320,18 +320,12 @@ func (c Context) KVStoreWithZeroRead(key storetypes.StoreKey) storetypes.KVStore
 
 // KVStore fetches a KVStore from the MultiStore.
 func (c Context) KVStore(key storetypes.StoreKey) storetypes.KVStore {
-	if c.upgradeChecker != nil && c.upgradeChecker(c, Nagqu) {
-		return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, storetypes.KVGasConfigAfterNagqu())
-	}
-	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, c.kvGasConfig)
+	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, storetypes.KVGasConfigAfterNagqu())
 }
 
 // TransientStore fetches a TransientStore from the MultiStore.
 func (c Context) TransientStore(key storetypes.StoreKey) storetypes.KVStore {
-	if c.upgradeChecker != nil && c.upgradeChecker(c, Nagqu) {
-		return c.MultiStore().GetKVStore(key)
-	}
-	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.gasMeter, c.kvGasConfig)
+	return c.MultiStore().GetKVStore(key)
 }
 
 // CacheContext returns a new Context with the multi-store cached and a new
