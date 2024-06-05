@@ -227,12 +227,12 @@ func VerifyAddressFormat(bz []byte) error {
 
 // MustAccAddressFromBech32 calls AccAddressFromBech32 and panics on error.
 func MustAccAddressFromBech32(address string) AccAddress {
-	panic("Deprecated method")
+	return MustAccAddressFromHex(address)
 }
 
 // AccAddressFromBech32 creates an AccAddress from a Bech32 string.
 func AccAddressFromBech32(address string) (addr AccAddress, err error) {
-	panic("Deprecated method")
+	return AccAddressFromHexUnsafe(address)
 }
 
 // Returns boolean for whether two AccAddresses are Equal
