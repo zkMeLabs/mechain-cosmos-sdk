@@ -174,18 +174,33 @@ func AccAddressFromHexUnsafe(address string) (AccAddress, error) {
 		return AccAddress{}, ErrEmptyHexAddress
 	}
 
-	if len(address) >= 2 && address[0] == '0' && (address[1] == 'x' || address[1] == 'X') {
-		address = address[2:]
-	}
-	if len(address) != 2*EthAddressLength {
-		return AccAddress{}, fmt.Errorf("invalid address hex length: %v != %v", len(address), 2*EthAddressLength)
-	}
+	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
+	if strings.HasPrefix(address, bech32PrefixAccAddr) {
+		bz, err := GetFromBech32(address, bech32PrefixAccAddr)
+		if err != nil {
+			return nil, err
+		}
 
-	bz, err := hex.DecodeString(address)
-	if err != nil {
-		return AccAddress{}, err
+		err = VerifyAddressFormat(bz)
+		if err != nil {
+			return nil, err
+		}
+
+		return bz, nil
+	} else {
+		if len(address) >= 2 && address[0] == '0' && (address[1] == 'x' || address[1] == 'X') {
+			address = address[2:]
+		}
+		if len(address) != 2*EthAddressLength {
+			return AccAddress{}, fmt.Errorf("invalid address hex length: %v != %v", len(address), 2*EthAddressLength)
+		}
+
+		bz, err := hex.DecodeString(address)
+		if err != nil {
+			return AccAddress{}, err
+		}
+		return bz, nil
 	}
-	return bz, nil
 }
 
 // VerifyAddressFormat verifies that the provided bytes form a valid address
