@@ -411,6 +411,19 @@ func (v Validator) ConsensusPower(r math.Int) int64 {
 	return 0
 }
 
+// CrossChainBytes gets the cross-chain related fields, including the relayer address and bls key.
+// The format of the cross-chain bytes is:
+// |-- Relayer Address--|-- BLS Key --|
+func (v Validator) CrossChainBytes() []byte {
+	var crossChainBytes []byte
+	if len(v.RelayerAddress) > 0 {
+		crossChainBytes = sdk.MustAccAddressFromHex(v.RelayerAddress)
+	}
+
+	crossChainBytes = append(crossChainBytes, v.BlsKey...)
+	return crossChainBytes
+}
+
 // PotentialConsensusPower returns the potential consensus-engine power.
 func (v Validator) PotentialConsensusPower(r math.Int) int64 {
 	return sdk.TokensToConsensusPower(v.Tokens, r)

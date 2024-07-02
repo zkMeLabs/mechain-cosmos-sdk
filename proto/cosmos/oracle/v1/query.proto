@@ -1,0 +1,53 @@
+syntax = "proto3";
+package cosmos.oracle.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/oracle/v1/oracle.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/x/oracle/types";
+
+// Query provides defines the gRPC querier service.
+service Query {
+  // Params returns the total set of cross chain parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/cosmos/oracle/v1/params";
+  }
+
+  // InturnRelayer returns the inturn relayer bls pub key and its relay interval
+  rpc InturnRelayer(QueryInturnRelayerRequest) returns (QueryInturnRelayerResponse) {
+    option (google.api.http).get = "/cosmos/oracle/v1/inturn_relayer";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// ClaimSrcChain defines the src chain of a claim
+enum ClaimSrcChain {
+  option (gogoproto.goproto_enum_prefix) = false;
+  // CLAIM_SRC_CHAIN_UNSPECIFIED
+  CLAIM_SRC_CHAIN_UNSPECIFIED = 0;
+  // CLAIM_SRC_CHAIN_BSC defines BSC source chain
+  CLAIM_SRC_CHAIN_BSC = 1;
+  // CLAIM_SRC_CHAIN_OP_BNB defines OPBNB source chain
+  CLAIM_SRC_CHAIN_OP_BNB = 2;
+}
+
+// QueryInturnRelayerRequest is the request type for the Query In-turn relayer RPC method.
+message QueryInturnRelayerRequest {
+  // ClaimSrcChain defines the src chain of a claim
+  ClaimSrcChain claim_src_chain = 1;
+}
+
+// QueryInturnRelayerResponse is the response type for the Query In-turn relayer RPC method.
+message QueryInturnRelayerResponse {
+  string        bls_pub_key    = 1;
+  RelayInterval relay_interval = 2;
+}

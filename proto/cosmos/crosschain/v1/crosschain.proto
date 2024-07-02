@@ -1,0 +1,30 @@
+syntax = "proto3";
+package cosmos.crosschain.v1;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/x/crosschain/types";
+
+// Params holds parameters for the cross chain module.
+message Params {
+  option (amino.name)                 = "cosmos-sdk/x/crosschain/Params";
+
+  // initial balance to mint for crosschain module when the chain starts
+  string init_module_balance = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// ChannelPermission defines the fields of the channel permission
+message ChannelPermission {
+  // destination chain id
+  uint32 dest_chain_id = 1;
+  // channel id
+  uint32 channel_id = 2;
+  // permission status, 1 for allow, 0 for forbidden
+  uint32 permission = 3;
+}

@@ -64,6 +64,7 @@ require (
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/sjson v1.2.5
 	github.com/wealdtech/go-eth2-util v1.6.3
+	github.com/willf/bitset v1.1.3
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea
 	golang.org/x/text v0.14.0

@@ -13,10 +13,12 @@ for any bug bounty. We advise you to be careful and experiment on the network at
 
 ## Key Features
 
-1. **auth**. The address format of the Greenfield blockchain is fully compatible with Ethereum. It accepts EIP712 transaction signing and verification. These enable the existing wallet infrastructure to interact with Greenfield at the beginning naturally.
-2. **gashub**. As an application specific chain, Greenfield defines the gas fee of each transaction type instead of calculating gas according to the CPU and storage consumption.
-3. **gov**. There are many system parameters to control the behavior of the Greenfield and its smart contract on Ethereum, e.g. gas price, cross-chain transfer fees. All these parameters will be determined by Greenfield Validator Set together through a proposal-vote process based on their staking. Such the process will be carried on cosmos sdk.
-4. **upgrade**. Seamless upgrade on Greenfield enable a client to sync blocks from genesis to the latest state.
+1. **auth**. The address format of the Greenfield blockchain is fully compatible with BSC (and Ethereum). It accepts EIP712 transaction signing and verification. These enable the existing wallet infrastructure to interact with Greenfield at the beginning naturally.
+2. **crosschain**. Cross-chain communication is the key foundation to allow the community to take advantage of the Greenfield and BNB Smart Chain dual chain structure..
+3. **gashub**. As an application specific chain, Greenfield defines the gas fee of each transaction type instead of calculating gas according to the CPU and storage consumption.
+4. **gov**. There are many system parameters to control the behavior of the Greenfield and its smart contract on BSC, e.g. gas price, cross-chain transfer fees. All these parameters will be determined by Greenfield Validator Set together through a proposal-vote process based on their staking. Such the process will be carried on cosmos sdk.
+5. **oracle**. The bottom layer of cross-chain mechanism, which focuses on primitive communication package handling and verification.
+6. **upgrade**. Seamless upgrade on Greenfield enable a client to sync blocks from genesis to the latest state.
 
 ## Quick Start
 *Note*: Requires [Go 1.18+](https://go.dev/dl/)
