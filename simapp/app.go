@@ -14,6 +14,12 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/spf13/cast"
+
+	"github.com/cosmos/cosmos-sdk/x/crosschain"
+	"github.com/cosmos/cosmos-sdk/x/oracle"
+
+	crosschainkeeper "github.com/cosmos/cosmos-sdk/x/crosschain/keeper"
+	crosschaintypes "github.com/cosmos/cosmos-sdk/x/crosschain/types"
 	gashubkeeper "github.com/cosmos/cosmos-sdk/x/gashub/keeper"
 
 	simappparams "cosmossdk.io/simapp/params"
@@ -139,6 +145,8 @@ var (
 		vesting.AppModuleBasic{},
 		nftmodule.AppModuleBasic{},
 		consensus.AppModuleBasic{},
+		crosschain.AppModuleBasic{},
+		oracle.AppModuleBasic{},
 		gashub.AppModuleBasic{},
 	)
 
@@ -151,6 +159,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		nft.ModuleName:                 nil,
+		crosschaintypes.ModuleName:     {authtypes.Minter},
 	}
 )
 
@@ -192,6 +201,7 @@ type SimApp struct {
 	GroupKeeper           groupkeeper.Keeper
 	NFTKeeper             nftkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
+	CrossChainKeeper      crosschainkeeper.Keeper
 	GashubKeeper          gashubkeeper.Keeper
 
 	// the module manager
@@ -269,7 +279,7 @@ func NewSimApp(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, capabilitytypes.StoreKey, gashubtypes.StoreKey,
-		authzkeeper.StoreKey, nftkeeper.StoreKey, group.StoreKey,
+		authzkeeper.StoreKey, nftkeeper.StoreKey, group.StoreKey, crosschaintypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -349,6 +359,9 @@ func NewSimApp(
 	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
+	app.CrossChainKeeper = crosschainkeeper.NewKeeper(appCodec, keys[crosschaintypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.StakingKeeper, app.BankKeeper)
+
 	app.GashubKeeper = gashubkeeper.NewKeeper(appCodec, keys[gashubtypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	// Register the proposal types
@@ -365,7 +378,7 @@ func NewSimApp(
 	*/
 	govKeeper := govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.AccountKeeper, app.BankKeeper,
-		app.StakingKeeper, app.MsgServiceRouter(), govConfig, authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.StakingKeeper, app.CrossChainKeeper, app.MsgServiceRouter(), govConfig, authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// Set legacy router for backwards compatibility with gov v1beta1
@@ -378,6 +391,8 @@ func NewSimApp(
 	)
 
 	app.NFTKeeper = nftkeeper.NewKeeper(keys[nftkeeper.StoreKey], appCodec, app.AccountKeeper, app.BankKeeper)
+	app.CrossChainKeeper = crosschainkeeper.NewKeeper(appCodec, keys[crosschaintypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.StakingKeeper, app.BankKeeper)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -417,6 +432,7 @@ func NewSimApp(
 		groupmodule.NewAppModule(appCodec, app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		nftmodule.NewAppModule(appCodec, app.NFTKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		crosschain.NewAppModule(app.CrossChainKeeper, app.BankKeeper, app.StakingKeeper),
 		gashub.NewAppModule(app.GashubKeeper),
 	)
 
@@ -430,7 +446,7 @@ func NewSimApp(
 		evidencetypes.ModuleName, stakingtypes.ModuleName,
 		authtypes.ModuleName, banktypes.ModuleName, govtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName,
 		authz.ModuleName, feegrant.ModuleName, nft.ModuleName, group.ModuleName,
-		paramstypes.ModuleName, vestingtypes.ModuleName, consensusparamtypes.ModuleName,
+		paramstypes.ModuleName, vestingtypes.ModuleName, consensusparamtypes.ModuleName, crosschaintypes.ModuleName,
 		gashubtypes.ModuleName,
 	)
 	app.ModuleManager.SetOrderEndBlockers(
@@ -440,7 +456,7 @@ func NewSimApp(
 		genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
 		feegrant.ModuleName, nft.ModuleName, group.ModuleName,
 		paramstypes.ModuleName, upgradetypes.ModuleName, vestingtypes.ModuleName, consensusparamtypes.ModuleName,
-		gashubtypes.ModuleName,
+		crosschaintypes.ModuleName, gashubtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -454,7 +470,7 @@ func NewSimApp(
 		distrtypes.ModuleName, stakingtypes.ModuleName, slashingtypes.ModuleName, govtypes.ModuleName,
 		minttypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
 		feegrant.ModuleName, nft.ModuleName, group.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
-		vestingtypes.ModuleName, consensusparamtypes.ModuleName,
+		vestingtypes.ModuleName, consensusparamtypes.ModuleName, crosschaintypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)

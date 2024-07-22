@@ -61,7 +61,7 @@ func (k Keeper) GetAuthority() string {
 // CONTRACT: the parameter Subspace must have the param key table already initialized
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey, authKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper, sk types.StakingKeeper,
+	bankKeeper types.BankKeeper, sk types.StakingKeeper, crossChainKeeper types.CrossChainKeeper,
 	router *baseapp.MsgServiceRouter, config types.Config, authority string,
 ) *Keeper {
 	// ensure governance module account is set
@@ -79,14 +79,15 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		storeKey:   key,
-		authKeeper: authKeeper,
-		bankKeeper: bankKeeper,
-		sk:         sk,
-		cdc:        cdc,
-		router:     router,
-		config:     config,
-		authority:  authority,
+		storeKey:         key,
+		authKeeper:       authKeeper,
+		bankKeeper:       bankKeeper,
+		sk:               sk,
+		crossChainKeeper: crossChainKeeper,
+		cdc:              cdc,
+		router:           router,
+		config:           config,
+		authority:        authority,
 	}
 }
 

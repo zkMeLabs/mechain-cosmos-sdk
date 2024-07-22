@@ -8,6 +8,7 @@ import (
 
 	cmtcrypto "github.com/cometbft/cometbft/crypto"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/eth/eip712"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -84,10 +85,38 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 
 // VerifySignature verifies that the ECDSA public key created a given signature over
 // the provided message. It will calculate the Keccak256 hash of the message
-// prior to verification.
+// prior to verification and approve verification if the signature can be verified
+// from either the original message or its EIP-712 representation.
 //
 // CONTRACT: The signature should be in [R || S] format.
 func (pubKey *PubKey) VerifySignature(msg, sig []byte) bool {
+	return pubKey.verifySignatureECDSA(msg, sig) || pubKey.verifySignatureAsEIP712(msg, sig)
+}
+
+// Verifies the signature as an EIP-712 signature by first converting the message payload
+// to EIP-712 object bytes, then performing ECDSA verification on the hash. This is to support
+// signing a Cosmos payload using EIP-712.
+func (pubKey *PubKey) verifySignatureAsEIP712(msg, sig []byte) bool {
+	eip712Bytes, err := eip712.GetEIP712BytesForMsg(msg)
+	if err != nil {
+		return false
+	}
+
+	if pubKey.verifySignatureECDSA(eip712Bytes, sig) {
+		return true
+	}
+
+	// Try verifying the signature using the legacy EIP-712 encoding
+	legacyEIP712Bytes, err := eip712.LegacyGetEIP712BytesForMsg(msg)
+	if err != nil {
+		return false
+	}
+
+	return pubKey.verifySignatureECDSA(legacyEIP712Bytes, sig)
+}
+
+// Perform standard ECDSA signature verification for the given raw bytes and signature.
+func (pubKey *PubKey) verifySignatureECDSA(msg, sig []byte) bool {
 	if len(sig) == crypto.SignatureLength {
 		// remove recovery ID (V) if contained in the signature
 		sig = sig[:len(sig)-1]
