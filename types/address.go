@@ -227,49 +227,12 @@ func VerifyAddressFormat(bz []byte) error {
 
 // MustAccAddressFromBech32 calls AccAddressFromBech32 and panics on error.
 func MustAccAddressFromBech32(address string) AccAddress {
-	// panic("Deprecated method")
-	addr, err := AccAddressFromBech32(address)
-	if err != nil {
-		panic(err)
-	}
-
-	return addr
+	return MustAccAddressFromHex(address)
 }
 
 // AccAddressFromBech32 creates an AccAddress from a Bech32 string.
 func AccAddressFromBech32(address string) (addr AccAddress, err error) {
-	// panic("Deprecated method")
-	if len(address) == 0 {
-		return AccAddress{}, ErrEmptyHexAddress
-	}
-
-	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
-	if strings.HasPrefix(address, bech32PrefixAccAddr) {
-		bz, err := GetFromBech32(address, bech32PrefixAccAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		err = VerifyAddressFormat(bz)
-		if err != nil {
-			return nil, err
-		}
-
-		return bz, nil
-	} else {
-		if len(address) >= 2 && address[0] == '0' && (address[1] == 'x' || address[1] == 'X') {
-			address = address[2:]
-		}
-		if len(address) != 2*EthAddressLength {
-			return AccAddress{}, fmt.Errorf("invalid address hex length: %v != %v", len(address), 2*EthAddressLength)
-		}
-
-		bz, err := hex.DecodeString(address)
-		if err != nil {
-			return AccAddress{}, err
-		}
-		return bz, nil
-	}
+	return AccAddressFromHexUnsafe(address)
 }
 
 // Returns boolean for whether two AccAddresses are Equal
