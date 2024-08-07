@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-
 	sdkerrors "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -133,7 +131,7 @@ func (k Keeper) CheckClaim(ctx sdk.Context, claim *types.MsgClaim) (sdk.AccAddre
 	validators := historicalInfo.Valset
 
 	claimSrcChain := types.CLAIM_SRC_CHAIN_BSC
-	if ctx.IsUpgraded(upgradetypes.Pampas) && sdk.ChainID(claim.SrcChainId) == k.CrossChainKeeper.GetDestOpChainID() {
+	if sdk.ChainID(claim.SrcChainId) == k.CrossChainKeeper.GetDestOpChainID() {
 		claimSrcChain = types.CLAIM_SRC_CHAIN_OP_BNB
 	}
 
