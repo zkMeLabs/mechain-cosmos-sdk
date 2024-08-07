@@ -375,11 +375,12 @@ func (k Keeper) PruneProposals(ctx sdk.Context) error {
 			return err
 		}
 		// Emit event for proposal finalized with its result
+		tallyResult := proposal.FinalTallyResult
 		if err := ctx.EventManager().EmitTypedEvent(
 			&group.EventProposalPruned{
 				ProposalId:  proposal.Id,
 				Status:      proposal.Status,
-				TallyResult: &proposal.FinalTallyResult,
+				TallyResult: &tallyResult,
 			}); err != nil {
 			return err
 		}
