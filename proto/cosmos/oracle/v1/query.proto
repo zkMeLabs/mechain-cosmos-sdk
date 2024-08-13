@@ -38,6 +38,18 @@ enum ClaimSrcChain {
   CLAIM_SRC_CHAIN_BSC = 1;
   // CLAIM_SRC_CHAIN_OP_BNB defines OPBNB source chain
   CLAIM_SRC_CHAIN_OP_BNB = 2;
+  // CLAIM_SRC_CHAIN_POLYGON defines POLYGON source chain
+  CLAIM_SRC_CHAIN_POLYGON = 3;
+  // CLAIM_SRC_CHAIN_SCROLL defines SCROLL source chain
+  CLAIM_SRC_CHAIN_SCROLL = 4;
+  // CLAIM_SRC_CHAIN_LINEA defines LINEA source chain
+  CLAIM_SRC_CHAIN_LINEA = 5;
+  // CLAIM_SRC_CHAIN_MANTLE defines MANTLE source chain
+  CLAIM_SRC_CHAIN_MANTLE = 6;
+  // CLAIM_SRC_CHAIN_ARBITRUM defines ARBITRUM source chain
+  CLAIM_SRC_CHAIN_ARBITRUM = 7;
+  // CLAIM_SRC_CHAIN_OPTIMISM defines OPTIMISM source chain
+  CLAIM_SRC_CHAIN_OPTIMISM = 8;
 }
 
 // QueryInturnRelayerRequest is the request type for the Query In-turn relayer RPC method.

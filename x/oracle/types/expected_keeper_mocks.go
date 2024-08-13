@@ -131,6 +131,20 @@ func (mr *MockCrossChainKeeperMockRecorder) GetCrossChainApp(channelID interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCrossChainApp", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetCrossChainApp), channelID)
 }
 
+// GetDestArbitrumChainID mocks base method.
+func (m *MockCrossChainKeeper) GetDestArbitrumChainID() types.ChainID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDestArbitrumChainID")
+	ret0, _ := ret[0].(types.ChainID)
+	return ret0
+}
+
+// GetDestArbitrumChainID indicates an expected call of GetDestArbitrumChainID.
+func (mr *MockCrossChainKeeperMockRecorder) GetDestArbitrumChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestArbitrumChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestArbitrumChainID))
+}
+
 // GetDestBscChainID mocks base method.
 func (m *MockCrossChainKeeper) GetDestBscChainID() types.ChainID {
 	m.ctrl.T.Helper()
@@ -145,6 +159,34 @@ func (mr *MockCrossChainKeeperMockRecorder) GetDestBscChainID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestBscChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestBscChainID))
 }
 
+// GetDestLineaChainID mocks base method.
+func (m *MockCrossChainKeeper) GetDestLineaChainID() types.ChainID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDestLineaChainID")
+	ret0, _ := ret[0].(types.ChainID)
+	return ret0
+}
+
+// GetDestLineaChainID indicates an expected call of GetDestLineaChainID.
+func (mr *MockCrossChainKeeperMockRecorder) GetDestLineaChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestLineaChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestLineaChainID))
+}
+
+// GetDestMantleChainID mocks base method.
+func (m *MockCrossChainKeeper) GetDestMantleChainID() types.ChainID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDestMantleChainID")
+	ret0, _ := ret[0].(types.ChainID)
+	return ret0
+}
+
+// GetDestMantleChainID indicates an expected call of GetDestMantleChainID.
+func (mr *MockCrossChainKeeperMockRecorder) GetDestMantleChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestMantleChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestMantleChainID))
+}
+
 // GetDestOpChainID mocks base method.
 func (m *MockCrossChainKeeper) GetDestOpChainID() types.ChainID {
 	m.ctrl.T.Helper()
@@ -157,6 +199,48 @@ func (m *MockCrossChainKeeper) GetDestOpChainID() types.ChainID {
 func (mr *MockCrossChainKeeperMockRecorder) GetDestOpChainID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestOpChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestOpChainID))
+}
+
+// GetDestOptimismChainID mocks base method.
+func (m *MockCrossChainKeeper) GetDestOptimismChainID() types.ChainID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDestOptimismChainID")
+	ret0, _ := ret[0].(types.ChainID)
+	return ret0
+}
+
+// GetDestOptimismChainID indicates an expected call of GetDestOptimismChainID.
+func (mr *MockCrossChainKeeperMockRecorder) GetDestOptimismChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestOptimismChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestOptimismChainID))
+}
+
+// GetDestPolygonChainID mocks base method.
+func (m *MockCrossChainKeeper) GetDestPolygonChainID() types.ChainID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDestPolygonChainID")
+	ret0, _ := ret[0].(types.ChainID)
+	return ret0
+}
+
+// GetDestPolygonChainID indicates an expected call of GetDestPolygonChainID.
+func (mr *MockCrossChainKeeperMockRecorder) GetDestPolygonChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestPolygonChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestPolygonChainID))
+}
+
+// GetDestScrollChainID mocks base method.
+func (m *MockCrossChainKeeper) GetDestScrollChainID() types.ChainID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDestScrollChainID")
+	ret0, _ := ret[0].(types.ChainID)
+	return ret0
+}
+
+// GetDestScrollChainID indicates an expected call of GetDestScrollChainID.
+func (mr *MockCrossChainKeeperMockRecorder) GetDestScrollChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestScrollChainID", reflect.TypeOf((*MockCrossChainKeeper)(nil).GetDestScrollChainID))
 }
 
 // GetReceiveSequence mocks base method.

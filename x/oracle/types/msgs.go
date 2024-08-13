@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"math"
 
 	errormods "cosmossdk.io/errors"
 
@@ -53,15 +52,15 @@ func (m *MsgClaim) ValidateBasic() error {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid from address: %s", err)
 	}
 
-	if m.SrcChainId > math.MaxUint16 {
-		return errormods.Wrap(sdkerrors.ErrInvalidRequest,
-			fmt.Sprintf("chain id should not be larger than %d", math.MaxUint16))
-	}
+	// if m.SrcChainId > math.MaxUint16 {
+	// 	return errormods.Wrap(sdkerrors.ErrInvalidRequest,
+	// 		fmt.Sprintf("chain id should not be larger than %d", math.MaxUint16))
+	// }
 
-	if m.DestChainId > math.MaxUint16 {
-		return errormods.Wrap(sdkerrors.ErrInvalidRequest,
-			fmt.Sprintf("chain id should not be larger than %d", math.MaxUint16))
-	}
+	// if m.DestChainId > math.MaxUint16 {
+	// 	return errormods.Wrap(sdkerrors.ErrInvalidRequest,
+	// 		fmt.Sprintf("chain id should not be larger than %d", math.MaxUint16))
+	// }
 
 	if len(m.Payload) == 0 {
 		return errormods.Wrap(sdkerrors.ErrInvalidRequest, "payload should not be empty")

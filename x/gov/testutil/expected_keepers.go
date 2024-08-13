@@ -52,4 +52,10 @@ type CrossChainKeeper interface {
 	IsDestChainSupported(chainID sdk.ChainID) bool
 
 	GetDestOpChainID() sdk.ChainID
+	GetDestPolygonChainID() sdk.ChainID
+	GetDestScrollChainID() sdk.ChainID
+	GetDestLineaChainID() sdk.ChainID
+	GetDestMantleChainID() sdk.ChainID
+	GetDestArbitrumChainID() sdk.ChainID
+	GetDestOptimismChainID() sdk.ChainID
 }

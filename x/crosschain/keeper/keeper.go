@@ -183,10 +183,28 @@ func (k Keeper) RegisterChannel(name string, id sdk.ChannelID, app sdk.CrossChai
 
 // IsDestChainSupported returns the support status of a dest chain
 func (k Keeper) IsDestChainSupported(chainID sdk.ChainID) bool {
-	if chainID == k.cfg.destBscChainId {
+	if chainID == k.cfg.destBscChainId || chainID == k.cfg.destPolygonChainId {
 		return true
 	}
 	if k.cfg.destOpChainId != 0 && chainID == k.cfg.destOpChainId {
+		return true
+	}
+	if k.cfg.destPolygonChainId != 0 && chainID == k.cfg.destPolygonChainId {
+		return true
+	}
+	if k.cfg.destScrollChainId != 0 && chainID == k.cfg.destScrollChainId {
+		return true
+	}
+	if k.cfg.destLineaChainId != 0 && chainID == k.cfg.destLineaChainId {
+		return true
+	}
+	if k.cfg.destMantleChainId != 0 && chainID == k.cfg.destMantleChainId {
+		return true
+	}
+	if k.cfg.destArbitrumChainId != 0 && chainID == k.cfg.destArbitrumChainId {
+		return true
+	}
+	if k.cfg.destOptimismChainId != 0 && chainID == k.cfg.destOptimismChainId {
 		return true
 	}
 	return false
@@ -242,6 +260,66 @@ func (k Keeper) SetDestOpChainID(destChainId sdk.ChainID) {
 // GetDestOpChainID gets the destination chain id of op chain
 func (k Keeper) GetDestOpChainID() sdk.ChainID {
 	return k.cfg.destOpChainId
+}
+
+// SetDestPolygonChainID sets the destination chain id of polygon chain
+func (k Keeper) SetDestPolygonChainID(destChainId sdk.ChainID) {
+	k.cfg.destPolygonChainId = destChainId
+}
+
+// GetDestPolygonChainID gets the destination chain id of polygon chain
+func (k Keeper) GetDestPolygonChainID() sdk.ChainID {
+	return k.cfg.destPolygonChainId
+}
+
+// SetDestScrollChainID sets the destination chain id of scroll chain
+func (k Keeper) SetDestScrollChainID(destChainId sdk.ChainID) {
+	k.cfg.destScrollChainId = destChainId
+}
+
+// GetDestScrollChainID gets the destination chain id of scroll chain
+func (k Keeper) GetDestScrollChainID() sdk.ChainID {
+	return k.cfg.destScrollChainId
+}
+
+// SetDestLineaChainID sets the destination chain id of linea chain
+func (k Keeper) SetDestLineaChainID(destChainId sdk.ChainID) {
+	k.cfg.destLineaChainId = destChainId
+}
+
+// GetDestLineaChainID gets the destination chain id of linea chain
+func (k Keeper) GetDestLineaChainID() sdk.ChainID {
+	return k.cfg.destLineaChainId
+}
+
+// SetDestMantleChainID sets the destination chain id of mantle chain
+func (k Keeper) SetDestMantleChainID(destChainId sdk.ChainID) {
+	k.cfg.destMantleChainId = destChainId
+}
+
+// GetDestMantleChainID gets the destination chain id of mantle chain
+func (k Keeper) GetDestMantleChainID() sdk.ChainID {
+	return k.cfg.destMantleChainId
+}
+
+// SetDestArbitrumChainID sets the destination chain id of arbitrum chain
+func (k Keeper) SetDestArbitrumChainID(destChainId sdk.ChainID) {
+	k.cfg.destArbitrumChainId = destChainId
+}
+
+// GetDestArbitrumChainID gets the destination chain id of arbitrum chain
+func (k Keeper) GetDestArbitrumChainID() sdk.ChainID {
+	return k.cfg.destArbitrumChainId
+}
+
+// SetDestOptimismChainID sets the destination chain id of optimism chain
+func (k Keeper) SetDestOptimismChainID(destChainId sdk.ChainID) {
+	k.cfg.destOptimismChainId = destChainId
+}
+
+// GetDestOptimismChainID gets the destination chain id of optimism chain
+func (k Keeper) GetDestOptimismChainID() sdk.ChainID {
+	return k.cfg.destOptimismChainId
 }
 
 // GetCrossChainPackage returns the ibc package by sequence
