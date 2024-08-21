@@ -130,9 +130,24 @@ func (k Keeper) CheckClaim(ctx sdk.Context, claim *types.MsgClaim) (sdk.AccAddre
 	}
 	validators := historicalInfo.Valset
 
-	claimSrcChain := types.CLAIM_SRC_CHAIN_BSC
-	if sdk.ChainID(claim.SrcChainId) == k.CrossChainKeeper.GetDestOpChainID() {
+	claimSrcChain := types.CLAIM_SRC_CHAIN_UNSPECIFIED
+	switch sdk.ChainID(claim.SrcChainId) {
+	case k.CrossChainKeeper.GetDestOpChainID():
 		claimSrcChain = types.CLAIM_SRC_CHAIN_OP_BNB
+	case k.CrossChainKeeper.GetDestPolygonChainID():
+		claimSrcChain = types.CLAIM_SRC_CHAIN_POLYGON
+	case k.CrossChainKeeper.GetDestScrollChainID():
+		claimSrcChain = types.CLAIM_SRC_CHAIN_SCROLL
+	case k.CrossChainKeeper.GetDestLineaChainID():
+		claimSrcChain = types.CLAIM_SRC_CHAIN_LINEA
+	case k.CrossChainKeeper.GetDestMantleChainID():
+		claimSrcChain = types.CLAIM_SRC_CHAIN_MANTLE
+	case k.CrossChainKeeper.GetDestArbitrumChainID():
+		claimSrcChain = types.CLAIM_SRC_CHAIN_ARBITRUM
+	case k.CrossChainKeeper.GetDestOptimismChainID():
+		claimSrcChain = types.CLAIM_SRC_CHAIN_OPTIMISM
+	default:
+		claimSrcChain = types.CLAIM_SRC_CHAIN_BSC
 	}
 
 	isValid, err := k.IsRelayerValid(ctx, relayer, validators, claim.Timestamp, claimSrcChain)

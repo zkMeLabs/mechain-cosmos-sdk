@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"math"
 	"testing"
 	"time"
 
@@ -55,32 +54,32 @@ func TestValidateBasic(t *testing.T) {
 			false,
 			"invalid from address",
 		},
-		{
-			types.MsgClaim{
-				FromAddress:    addr.String(),
-				SrcChainId:     math.MaxUint16 + 1,
-				DestChainId:    2,
-				Sequence:       1,
-				Payload:        []byte("test payload"),
-				VoteAddressSet: []uint64{0, 1},
-				AggSignature:   []byte("test sig"),
-			},
-			false,
-			"chain id should not be larger than",
-		},
-		{
-			types.MsgClaim{
-				FromAddress:    addr.String(),
-				SrcChainId:     1,
-				DestChainId:    math.MaxUint16 + 1,
-				Sequence:       1,
-				Payload:        []byte("test payload"),
-				VoteAddressSet: []uint64{0, 1},
-				AggSignature:   []byte("test sig"),
-			},
-			false,
-			"chain id should not be larger than",
-		},
+		// {
+		// 	types.MsgClaim{
+		// 		FromAddress:    addr.String(),
+		// 		SrcChainId:     math.MaxUint16 + 1,
+		// 		DestChainId:    2,
+		// 		Sequence:       1,
+		// 		Payload:        []byte("test payload"),
+		// 		VoteAddressSet: []uint64{0, 1},
+		// 		AggSignature:   []byte("test sig"),
+		// 	},
+		// 	false,
+		// 	"chain id should not be larger than",
+		// },
+		// {
+		// 	types.MsgClaim{
+		// 		FromAddress:    addr.String(),
+		// 		SrcChainId:     1,
+		// 		DestChainId:    math.MaxUint16 + 1,
+		// 		Sequence:       1,
+		// 		Payload:        []byte("test payload"),
+		// 		VoteAddressSet: []uint64{0, 1},
+		// 		AggSignature:   []byte("test sig"),
+		// 	},
+		// 	false,
+		// 	"chain id should not be larger than",
+		// },
 		{
 			types.MsgClaim{
 				FromAddress:    addr.String(),

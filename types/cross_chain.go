@@ -10,7 +10,7 @@ type CrossChainPackageType uint8
 
 type (
 	ChannelID uint8
-	ChainID   uint16
+	ChainID   uint32
 )
 
 const (

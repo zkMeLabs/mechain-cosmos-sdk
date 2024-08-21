@@ -24,6 +24,12 @@ type CrossChainKeeper interface {
 	IncrReceiveSequence(ctx sdk.Context, chainId sdk.ChainID, channelID sdk.ChannelID)
 	GetDestBscChainID() sdk.ChainID
 	GetDestOpChainID() sdk.ChainID
+	GetDestPolygonChainID() sdk.ChainID
+	GetDestScrollChainID() sdk.ChainID
+	GetDestLineaChainID() sdk.ChainID
+	GetDestMantleChainID() sdk.ChainID
+	GetDestArbitrumChainID() sdk.ChainID
+	GetDestOptimismChainID() sdk.ChainID
 }
 
 type BankKeeper interface {

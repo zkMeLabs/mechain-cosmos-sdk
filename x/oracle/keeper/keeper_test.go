@@ -89,6 +89,13 @@ func (s *TestSuite) TestProcessClaim() {
 
 	newValidators, blsKeys := createValidators(s.T())
 
+	s.crossChainKeeper.EXPECT().GetDestOpChainID().Return(sdk.ChainID(204)).AnyTimes()
+	s.crossChainKeeper.EXPECT().GetDestPolygonChainID().Return(sdk.ChainID(137)).AnyTimes()
+	s.crossChainKeeper.EXPECT().GetDestScrollChainID().Return(sdk.ChainID(534352)).AnyTimes() //534352 overflows uint16
+	s.crossChainKeeper.EXPECT().GetDestLineaChainID().Return(sdk.ChainID(59144)).AnyTimes()
+	s.crossChainKeeper.EXPECT().GetDestMantleChainID().Return(sdk.ChainID(5000)).AnyTimes()
+	s.crossChainKeeper.EXPECT().GetDestArbitrumChainID().Return(sdk.ChainID(42161)).AnyTimes()
+	s.crossChainKeeper.EXPECT().GetDestOptimismChainID().Return(sdk.ChainID(10)).AnyTimes()
 	s.stakingKeeper.EXPECT().GetHistoricalInfo(gomock.Any(), gomock.Any()).Return(stakingtypes.HistoricalInfo{
 		Header: s.ctx.BlockHeader(),
 		Valset: newValidators,
