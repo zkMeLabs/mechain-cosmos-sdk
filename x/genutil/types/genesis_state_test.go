@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/cometbft/cometbft/crypto/tmhash"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/cometbft/cometbft/votepool"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,10 +43,11 @@ func TestValidateGenesisMultipleMessages(t *testing.T) {
 	desc := stakingtypes.NewDescription("testname", "", "", "", "")
 	comm := stakingtypes.CommissionRates{}
 
-	blsSecretKey1, _ := bls.RandKey()
+	blsSecretKey1, _ := bls.GenerateBlsKey()
 	blsPk1 := hex.EncodeToString(blsSecretKey1.PublicKey().Marshal())
-	blsProofBuf := blsSecretKey1.Sign(tmhash.Sum(blsSecretKey1.PublicKey().Marshal()))
-	blsProof1 := hex.EncodeToString(blsProofBuf.Marshal())
+	blsProofBuf1, _ := blsSecretKey1.Sign(tmhash.Sum(blsSecretKey1.PublicKey().Marshal()), votepool.DST)
+	blsProofBts1, _ := blsProofBuf1.Marshal()
+	blsProof1 := hex.EncodeToString(blsProofBts1)
 	msg1, err := stakingtypes.NewMsgCreateValidator(
 		sdk.AccAddress(pk1.Address()), pk1,
 		sdk.NewInt64Coin(sdk.DefaultBondDenom, 50), desc, comm, sdk.OneInt(),
@@ -53,10 +55,11 @@ func TestValidateGenesisMultipleMessages(t *testing.T) {
 		sdk.AccAddress(pk1.Address()), sdk.AccAddress(pk1.Address()), blsPk1, blsProof1)
 	require.NoError(t, err)
 
-	blsSecretKey2, _ := bls.RandKey()
+	blsSecretKey2, _ := bls.GenerateBlsKey()
 	blsPk2 := hex.EncodeToString(blsSecretKey2.PublicKey().Marshal())
-	blsProofBuf = blsSecretKey2.Sign(tmhash.Sum(blsSecretKey2.PublicKey().Marshal()))
-	blsProof2 := hex.EncodeToString(blsProofBuf.Marshal())
+	blsProofBuf2, _ := blsSecretKey2.Sign(tmhash.Sum(blsSecretKey2.PublicKey().Marshal()), votepool.DST)
+	blsProofBts2, _ := blsProofBuf2.Marshal()
+	blsProof2 := hex.EncodeToString(blsProofBts2)
 	msg2, err := stakingtypes.NewMsgCreateValidator(
 		sdk.AccAddress(pk2.Address()), pk2,
 		sdk.NewInt64Coin(sdk.DefaultBondDenom, 50), desc, comm, sdk.OneInt(),
@@ -77,10 +80,11 @@ func TestValidateGenesisMultipleMessages(t *testing.T) {
 
 func TestValidateGenesisBadMessage(t *testing.T) {
 	desc := stakingtypes.NewDescription("testname", "", "", "", "")
-	blsSecretKey1, _ := bls.RandKey()
+	blsSecretKey1, _ := bls.GenerateBlsKey()
 	blsPk1 := hex.EncodeToString(blsSecretKey1.PublicKey().Marshal())
-	blsProofBuf := blsSecretKey1.Sign(tmhash.Sum(blsSecretKey1.PublicKey().Marshal()))
-	blsProof := hex.EncodeToString(blsProofBuf.Marshal())
+	blsProofBuf, _ := blsSecretKey1.Sign(tmhash.Sum(blsSecretKey1.PublicKey().Marshal()), votepool.DST)
+	blsProofBts, _ := blsProofBuf.Marshal()
+	blsProof := hex.EncodeToString(blsProofBts)
 	msg1 := stakingtypes.NewMsgEditValidator(
 		sdk.AccAddress(pk1.Address()), desc, nil, nil,
 		sdk.AccAddress(pk1.Address()), sdk.AccAddress(pk1.Address()), blsPk1, blsProof,

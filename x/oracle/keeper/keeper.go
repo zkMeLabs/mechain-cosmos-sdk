@@ -5,9 +5,10 @@ import (
 	"encoding/hex"
 
 	sdkerrors "cosmossdk.io/errors"
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cometbft/cometbft/votepool"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 	"github.com/willf/bitset"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -165,7 +166,7 @@ func (k Keeper) CheckClaim(ctx sdk.Context, claim *types.MsgClaim) (sdk.AccAddre
 	}
 
 	signedRelayers := make([]sdk.AccAddress, 0, validatorsBitSet.Count())
-	votedPubKeys := make([]bls.PublicKey, 0, validatorsBitSet.Count())
+	votedPubKeys := make([]*bls.PublicKey, 0, validatorsBitSet.Count())
 	for index, val := range validators {
 		if !validatorsBitSet.Test(uint(index)) {
 			continue
@@ -173,7 +174,7 @@ func (k Keeper) CheckClaim(ctx sdk.Context, claim *types.MsgClaim) (sdk.AccAddre
 
 		signedRelayers = append(signedRelayers, sdk.MustAccAddressFromHex(val.RelayerAddress))
 
-		votePubKey, err := bls.PublicKeyFromBytes(val.BlsKey)
+		votePubKey, err := bls.UnmarshalPublicKey(val.BlsKey)
 		if err != nil {
 			return sdk.AccAddress{}, nil, sdkerrors.Wrapf(types.ErrBlsPubKey, "BLS public key converts failed: %v", err)
 		}
@@ -186,12 +187,13 @@ func (k Keeper) CheckClaim(ctx sdk.Context, claim *types.MsgClaim) (sdk.AccAddre
 	}
 
 	// Verify the aggregated signature.
-	aggSig, err := bls.SignatureFromBytes(claim.AggSignature)
+	aggSig, err := bls.UnmarshalSignature(claim.AggSignature)
 	if err != nil {
 		return sdk.AccAddress{}, nil, sdkerrors.Wrapf(types.ErrInvalidBlsSignature, "BLS signature converts failed: %v", err)
 	}
 
-	if !aggSig.FastAggregateVerify(votedPubKeys, claim.GetBlsSignBytes()) {
+	msg := claim.GetBlsSignBytes()
+	if !aggSig.VerifyAggregated(votedPubKeys, msg[:], votepool.DST) {
 		return sdk.AccAddress{}, nil, sdkerrors.Wrapf(types.ErrInvalidBlsSignature, "signature verify failed")
 	}
 

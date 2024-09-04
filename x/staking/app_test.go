@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/prysmaticlabs/prysm/crypto/bls"
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/stretchr/testify/require"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -18,6 +18,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/cometbft/cometbft/votepool"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/eth/ethsecp256k1"
 	sdktestutil "github.com/cosmos/cosmos-sdk/testutil"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -69,10 +70,11 @@ func TestStakingMsgs(t *testing.T) {
 
 	// create validator
 	description := types.NewDescription("foo_moniker", "", "", "", "")
-	blsSecretKey, _ := bls.RandKey()
+	blsSecretKey, _ := bls.GenerateBlsKey()
 	blsPubKey := hex.EncodeToString(blsSecretKey.PublicKey().Marshal())
-	blsProofBuf := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()))
-	blsProof1 := hex.EncodeToString(blsProofBuf.Marshal())
+	blsProofBuf, _ := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()), votepool.DST)
+	blsProofBts, _ := blsProofBuf.Marshal()
+	blsProof1 := hex.EncodeToString(blsProofBts)
 	createValidatorMsg, err := types.NewMsgCreateValidator(
 		addr1, valKey.PubKey(),
 		bondCoin, description, commissionRates, sdk.OneInt(),

@@ -3,9 +3,10 @@ package bls
 import (
 	"bytes"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	cmtcrypto "github.com/cometbft/cometbft/crypto"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 
+	"github.com/cometbft/cometbft/votepool"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
@@ -72,14 +73,14 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 // VerifySignature verifies that the BLS public key created a given signature over
 // the provided message.
 func (pubKey *PubKey) VerifySignature(msg, sig []byte) bool {
-	key, err := bls.PublicKeyFromBytes(pubKey.Bytes())
+	key, err := bls.UnmarshalPublicKey(pubKey.Bytes())
 	if err != nil {
 		return false
 	}
-	signature, err := bls.SignatureFromBytes(sig)
+	signature, err := bls.UnmarshalSignature(sig)
 	if err != nil {
 		return false
 	}
 
-	return signature.Verify(key, msg)
+	return signature.Verify(key, msg, votepool.DST)
 }

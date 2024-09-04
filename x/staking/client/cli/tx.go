@@ -95,7 +95,7 @@ Where create_validator_proposal.json contains:
 				"key": "${VALIDATOR_NODE_PUB_KEY}"
 			},
 			"value": {
-				"denom": "BNB",
+				"denom": "ame",
 				"amount": "1000000000000000000000"
 			},
 			"from": "0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2",
@@ -108,7 +108,7 @@ Where create_validator_proposal.json contains:
 	"metadata": "",
 	"title": "Create ${NODE_NAME} Validator",
 	"summary": "create ${NODE_NAME} validator",
-	"deposit": "1000000000000000000BNB"
+	"deposit": "1000000000000000000ame"
 }
 
 modify the related configrations as you need, where you can get the pubkey using "%s tendermint show-validator"

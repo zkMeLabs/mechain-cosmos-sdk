@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/99designs/keyring"
 	tmcrypto "github.com/cometbft/cometbft/crypto"
 	"github.com/pkg/errors"
@@ -561,10 +562,17 @@ func (ks keystore) NewAccount(name string, mnemonic string, bip39Passphrase stri
 		return nil, ErrUnsupportedSigningAlgo
 	}
 
-	// create master key and derive first key for keyring
-	derivedPriv, err := algo.Derive()(mnemonic, bip39Passphrase, hdPath)
-	if err != nil {
-		return nil, err
+	var derivedPriv []byte
+	var err error
+	if algo.Name() != hd.BLSType {
+		// create master key and derive first key for keyring
+		derivedPriv, err = algo.Derive()(mnemonic, bip39Passphrase, hdPath)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		blskey, _ := bls.GenerateBlsKey()
+		derivedPriv, _ = blskey.Marshal()
 	}
 
 	privKey := algo.Generate()(derivedPriv)

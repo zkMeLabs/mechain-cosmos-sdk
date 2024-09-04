@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/crypto"
 
@@ -36,7 +36,7 @@ func (suite *SKSuite) TestEquals() {
 
 func (suite *SKSuite) TestPubKey() {
 	pk := suite.sk.PubKey()
-	sk, err := bls.SecretKeyFromBytes(suite.sk.Bytes())
+	sk, err := bls.UnmarshalPrivateKey(suite.sk.Bytes())
 	if !suite.Assert().NoError(err) {
 		return
 	}
