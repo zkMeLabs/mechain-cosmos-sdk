@@ -61,7 +61,7 @@ func (s *TestSuite) TestClaim() {
 	s.crossChainKeeper.EXPECT().CreateRawIBCPackageWithFee(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(uint64(0), nil).AnyTimes()
 	s.crossChainKeeper.EXPECT().GetCrossChainApp(sdk.ChannelID(1)).Return(&DummyCrossChainApp{}).AnyTimes()
 	s.crossChainKeeper.EXPECT().IncrReceiveSequence(gomock.Any(), gomock.Any(), gomock.Any()).Return().AnyTimes()
-	s.stakingKeeper.EXPECT().BondDenom(gomock.Any()).Return("ame").AnyTimes()
+	s.stakingKeeper.EXPECT().BondDenom(gomock.Any()).Return("azkme").AnyTimes()
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 	validatorMap := make(map[string]int, 0)
@@ -134,7 +134,7 @@ func (s *TestSuite) TestInvalidClaim() {
 	s.crossChainKeeper.EXPECT().CreateRawIBCPackageWithFee(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(uint64(0), nil).AnyTimes()
 	s.crossChainKeeper.EXPECT().GetCrossChainApp(sdk.ChannelID(1)).Return(&DummyCrossChainApp{}).AnyTimes()
 	s.crossChainKeeper.EXPECT().IncrReceiveSequence(gomock.Any(), gomock.Any(), gomock.Any()).Return().AnyTimes()
-	s.stakingKeeper.EXPECT().BondDenom(gomock.Any()).Return("ame").AnyTimes()
+	s.stakingKeeper.EXPECT().BondDenom(gomock.Any()).Return("azkme").AnyTimes()
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 	validatorMap := make(map[string]int, 0)

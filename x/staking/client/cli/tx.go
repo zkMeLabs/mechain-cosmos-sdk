@@ -95,7 +95,7 @@ Where create_validator_proposal.json contains:
 				"key": "${VALIDATOR_NODE_PUB_KEY}"
 			},
 			"value": {
-				"denom": "ame",
+				"denom": "azkme",
 				"amount": "1000000000000000000000"
 			},
 			"from": "0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2",

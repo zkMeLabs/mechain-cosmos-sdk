@@ -1021,5 +1021,10 @@ func (ks keystore) convertFromLegacyInfo(info LegacyInfo) (*Record, error) {
 }
 
 func addrHexKeyAsString(address sdk.Address) string {
-	return fmt.Sprintf("%s.%s", hex.EncodeToString(address.Bytes()), addressSuffix)
+	result := fmt.Sprintf("%s.%s", hex.EncodeToString(address.Bytes()), addressSuffix)
+	// The maximum length of linux file name is 255 bytes, so truncate
+	if len(result) > 255 {
+		result = result[:128]
+	}
+	return result
 }

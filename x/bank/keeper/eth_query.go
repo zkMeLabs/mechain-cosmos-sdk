@@ -18,7 +18,7 @@ func EthQueryBalanceHandlerGen(srv interface{}) baseapp.EthQueryHandler {
 		if err := json.Unmarshal(req.Params, &params); err != nil {
 			return abci.ResponseEthQuery{}, err
 		}
-		in.Denom = "ame" // only support ame
+		in.Denom = "azkme" // only support azkme
 		for _, p := range params.([]interface{}) {
 			addr := p.(string)
 			if _, err := sdk.AccAddressFromHexUnsafe(addr); err == nil {
