@@ -163,17 +163,17 @@ require (
 
 replace (
 	cosmossdk.io/api => ../api
-	github.com/0xPolygon/polygon-edge v1.3.3 => github.com/zkMeLabs/polygon-edge v0.0.0-20240909101200-6bec9fa64975
+	github.com/0xPolygon/polygon-edge v1.3.3 => github.com/zkMeLabs/polygon-edge v1.3.3-mechain.1
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.1
 
-	github.com/cometbft/cometbft => github.com/zkMeLabs/mechain-cometbft v0.0.0-20240910083017-06de699f1bf5
+	github.com/cometbft/cometbft => github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.1
 	github.com/cometbft/cometbft-db => github.com/bnb-chain/greenfield-cometbft-db v0.8.1-alpha.1
 
 	// Simapp always use the latest version of the cosmos-sdk
 	github.com/cosmos/cosmos-sdk => ../.
-	github.com/cosmos/gogoproto => github.com/zkMeLabs/gogoproto v0.0.0-20240821070310-8cfe3faf1496
+	github.com/cosmos/gogoproto => github.com/zkMeLabs/gogoproto v1.4.10-mechain.1
 	github.com/cosmos/iavl => github.com/bnb-chain/greenfield-iavl v0.20.1
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
