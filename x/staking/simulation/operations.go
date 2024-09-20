@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/cometbft/cometbft/crypto/tmhash"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 
+	"github.com/cometbft/cometbft/votepool"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -160,10 +161,11 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, bk types.BankKeeper, k *
 			simtypes.RandomDecAmount(r, maxCommission),
 		)
 
-		blsSecretKey, _ := bls.RandKey()
+		blsSecretKey, _ := bls.GenerateBlsKey()
 		blsPk := hex.EncodeToString(blsSecretKey.PublicKey().Marshal())
-		blsProofBuf := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()))
-		blsProof := hex.EncodeToString(blsProofBuf.Marshal())
+		blsProofBuf, _ := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()), votepool.DST)
+		blsProofBts, _ := blsProofBuf.Marshal()
+		blsProof := hex.EncodeToString(blsProofBts)
 
 		msg, err := types.NewMsgCreateValidator(
 			address, simAccount.ConsKey.PubKey(),

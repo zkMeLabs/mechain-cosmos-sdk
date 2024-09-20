@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/cometbft/cometbft/votepool"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/eth/ethsecp256k1"
 	sdktestutil "github.com/cosmos/cosmos-sdk/testutil"
@@ -18,7 +20,6 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 	"github.com/stretchr/testify/suite"
 
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -86,19 +87,21 @@ func (suite *GenTxTestSuite) SetupTest() {
 
 	amount := sdk.NewInt64Coin(sdk.DefaultBondDenom, 50)
 	one := math.OneInt()
-	blsSecretKey1, _ := bls.RandKey()
-	blsProofBuf := blsSecretKey1.Sign(tmhash.Sum(blsSecretKey1.PublicKey().Marshal()))
-	blsProof1 := hex.EncodeToString(blsProofBuf.Marshal())
+	blsSecretKey1, _ := bls.GenerateBlsKey()
+	blsProofBuf1, _ := blsSecretKey1.Sign(tmhash.Sum(blsSecretKey1.PublicKey().Marshal()), votepool.DST)
+	blsProofBts1, _ := blsProofBuf1.Marshal()
+	blsProof1 := hex.EncodeToString(blsProofBts1)
 	blsPk1 := hex.EncodeToString(blsSecretKey1.PublicKey().Marshal())
 
 	suite.msg1, err = stakingtypes.NewMsgCreateValidator(
 		sdk.AccAddress(pk1.Address()), pk1, amount, desc, comm, one, sdk.AccAddress(pk1.Address()), sdk.AccAddress(pk1.Address()), sdk.AccAddress(pk1.Address()), sdk.AccAddress(pk1.Address()), blsPk1, blsProof1)
 	suite.NoError(err)
 
-	blsSecretKey2, _ := bls.RandKey()
+	blsSecretKey2, _ := bls.GenerateBlsKey()
 	blsPk2 := hex.EncodeToString(blsSecretKey2.PublicKey().Marshal())
-	blsProofBuf = blsSecretKey2.Sign(tmhash.Sum(blsSecretKey2.PublicKey().Marshal()))
-	blsProof2 := hex.EncodeToString(blsProofBuf.Marshal())
+	blsProofBuf2, _ := blsSecretKey2.Sign(tmhash.Sum(blsSecretKey2.PublicKey().Marshal()), votepool.DST)
+	blsProofBts2, _ := blsProofBuf2.Marshal()
+	blsProof2 := hex.EncodeToString(blsProofBts2)
 
 	suite.msg2, err = stakingtypes.NewMsgCreateValidator(
 		sdk.AccAddress(pk2.Address()), pk1, amount, desc, comm, one, sdk.AccAddress(pk2.Address()), sdk.AccAddress(pk2.Address()), sdk.AccAddress(pk2.Address()), sdk.AccAddress(pk2.Address()), blsPk2, blsProof2)

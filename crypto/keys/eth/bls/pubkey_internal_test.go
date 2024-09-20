@@ -80,7 +80,7 @@ func (suite *PKSuite) TestMarshalProto() {
 	require.NoError(emptyCodec.Unmarshal(bz, &pk))
 	require.True(pk.Equals(suite.pk))
 
-	const bufSize = 100
+	const bufSize = 260
 	bz2 := make([]byte, bufSize)
 	pkCpy := suite.pk
 	_, err = pkCpy.MarshalTo(bz2)

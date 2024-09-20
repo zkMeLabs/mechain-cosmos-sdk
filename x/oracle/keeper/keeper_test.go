@@ -6,10 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/golang/mock/gomock"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
-	"github.com/prysmaticlabs/prysm/crypto/bls/blst"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/willf/bitset"
@@ -155,7 +154,7 @@ func (s *TestSuite) TestProcessClaim() {
 
 	// wrong sig
 	msgClaim.VoteAddressSet = valBitSet.Bytes()
-	msgClaim.AggSignature = bytes.Repeat([]byte{2}, 96)
+	msgClaim.AggSignature = bytes.Repeat([]byte{2}, sdk.BLSSignatureLength)
 
 	s.ctx = s.ctx.WithBlockTime(time.Unix(int64(msgClaim.Timestamp), 0))
 	_, _, err = s.oracleKeeper.CheckClaim(s.ctx, &msgClaim)
@@ -175,7 +174,7 @@ func (s *TestSuite) TestKeeper_IsRelayerValid() {
 		pk := ed25519.GenPrivKey().PubKey()
 
 		val := newValidator(s.T(), sdk.AccAddress(pk.Address()), pk)
-		privKey, _ := blst.RandKey()
+		privKey, _ := bls.GenerateBlsKey()
 		val.BlsKey = privKey.PublicKey().Marshal()
 		vals[i] = val
 	}
@@ -281,16 +280,16 @@ func newValidator(t *testing.T, operator sdk.AccAddress, pubKey cryptotypes.PubK
 	return v
 }
 
-func createValidators(t *testing.T) ([]stakingtypes.Validator, []bls.SecretKey) {
+func createValidators(t *testing.T) ([]stakingtypes.Validator, []*bls.PrivateKey) {
 	addrs := simtestutil.CreateIncrementalAccounts(5)
 	valAddrs := simtestutil.CopyAddrs(addrs)
 	pks := simtestutil.CreateTestPubKeys(5)
 
-	privKey1, _ := blst.RandKey()
-	privKey2, _ := blst.RandKey()
-	privKey3, _ := blst.RandKey()
+	privKey1, _ := bls.GenerateBlsKey()
+	privKey2, _ := bls.GenerateBlsKey()
+	privKey3, _ := bls.GenerateBlsKey()
 
-	blsKeys := []bls.SecretKey{privKey1, privKey2, privKey3}
+	blsKeys := []*bls.PrivateKey{privKey1, privKey2, privKey3}
 
 	val1 := newValidator(t, valAddrs[0], pks[0])
 	val1.BlsKey = privKey1.PublicKey().Marshal()

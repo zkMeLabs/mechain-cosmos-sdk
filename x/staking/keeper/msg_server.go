@@ -6,12 +6,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/armon/go-metrics"
 	"github.com/cometbft/cometbft/crypto/tmhash"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/cometbft/cometbft/votepool"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -644,21 +645,21 @@ func (ms msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdatePara
 // CheckBlsProof checks the BLS signature of the validator
 func (ms msgServer) CheckBlsProof(blsPk, sig []byte) error {
 	if len(sig) != sdk.BLSSignatureLength {
-		return sdkerrors.Wrapf(sdkerrors.ErrorInvalidSigner, "signature length (actual: %d) doesn't match typical BLS signature 96 bytes", len(sig))
+		return sdkerrors.Wrapf(sdkerrors.ErrorInvalidSigner, "signature length (actual: %d) doesn't match typical BLS signature 64 bytes", len(sig))
 	}
 
-	blsPubKey, err := bls.PublicKeyFromBytes(blsPk)
+	blsPubKey, err := bls.UnmarshalPublicKey(blsPk)
 	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrorInvalidSigner, "BLS public key is invalid")
 	}
 
-	signature, err := bls.SignatureFromBytes(sig)
+	signature, err := bls.UnmarshalSignature(sig)
 	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrorInvalidSigner, "BLS signature key is invalid")
 	}
 
 	sigHash := tmhash.Sum(blsPk)
-	if !signature.Verify(blsPubKey, sigHash) {
+	if !signature.Verify(blsPubKey, sigHash, votepool.DST) {
 		return sdkerrors.Wrap(sdkerrors.ErrorInvalidSigner, "BLS signature verification is failed")
 	}
 	return nil

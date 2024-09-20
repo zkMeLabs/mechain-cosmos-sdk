@@ -13,8 +13,8 @@ import (
 
 const (
 	ValidatorBitSetLength = 4 // 256 bits
-	BLSPublicKeyLength    = 48
-	BLSSignatureLength    = 96
+	BLSPublicKeyLength    = 128
+	BLSSignatureLength    = 64
 )
 
 type (

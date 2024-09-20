@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/cometbft/cometbft/crypto/tmhash"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/cometbft/cometbft/votepool"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -44,10 +45,11 @@ func TestMsgDecode(t *testing.T) {
 	require.True(t, pk1.Equals(pkUnmarshaled.(*ed25519.PubKey)))
 
 	// now let's try to serialize the whole message
-	blsSecretKey, _ := bls.RandKey()
+	blsSecretKey, _ := bls.GenerateBlsKey()
 	blsPk := hex.EncodeToString(blsSecretKey.PublicKey().Marshal())
-	blsProofBuf := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()))
-	blsProof := hex.EncodeToString(blsProofBuf.Marshal())
+	blsProofBuf, _ := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()), votepool.DST)
+	blsProofBts, _ := blsProofBuf.Marshal()
+	blsProof := hex.EncodeToString(blsProofBts)
 
 	commission1 := types.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
 	msg, err := types.NewMsgCreateValidator(
@@ -102,10 +104,11 @@ func TestMsgCreateValidator(t *testing.T) {
 			blsProof string
 		)
 		if !tc.validatorAddr.Equals(emptyAddr) {
-			blsSecretKey, _ := bls.RandKey()
+			blsSecretKey, _ := bls.GenerateBlsKey()
 			blsPk = hex.EncodeToString(blsSecretKey.PublicKey().Marshal())
-			blsProofBuf := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()))
-			blsProof = hex.EncodeToString(blsProofBuf.Marshal())
+			blsProofBuf, _ := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()), votepool.DST)
+			blsProofBts, _ := blsProofBuf.Marshal()
+			blsProof = hex.EncodeToString(blsProofBts)
 		}
 
 		msg, err := types.NewMsgCreateValidator(
@@ -147,10 +150,11 @@ func TestMsgEditValidator(t *testing.T) {
 			blsProof string
 		)
 
-		blsSecretKey, _ := bls.RandKey()
+		blsSecretKey, _ := bls.GenerateBlsKey()
 		blsPk = hex.EncodeToString(blsSecretKey.PublicKey().Marshal())
-		blsProofBuf := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()))
-		blsProof = hex.EncodeToString(blsProofBuf.Marshal())
+		blsProofBuf, _ := blsSecretKey.Sign(tmhash.Sum(blsSecretKey.PublicKey().Marshal()), votepool.DST)
+		blsProofBts, _ := blsProofBuf.Marshal()
+		blsProof = hex.EncodeToString(blsProofBts)
 
 		msg := types.NewMsgEditValidator(
 			tc.validatorAddr, description, &newRate, &tc.minSelfDelegation,

@@ -3,8 +3,9 @@ package bls
 import (
 	"crypto/subtle"
 
-	"github.com/prysmaticlabs/prysm/crypto/bls"
+	"github.com/0xPolygon/polygon-edge/bls"
 
+	"github.com/cometbft/cometbft/votepool"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
@@ -12,18 +13,20 @@ import (
 var (
 	_ cryptotypes.PrivKey  = &PrivKey{}
 	_ codec.AminoMarshaler = &PrivKey{}
+	// DST                      = []byte("BLS_SIG_ZZZG1_XMD:SHA256-SSWU-RO-_NUL_")
 )
 
 // GenPrivKey generates a new random private key. It returns an error upon
 // failure.
 func GenPrivKey() (*PrivKey, error) {
-	secretKey, err := bls.RandKey()
+	secretKey, err := bls.GenerateBlsKey()
 	if err != nil {
 		return nil, err
 	}
 
+	prikey, _ := secretKey.Marshal()
 	return &PrivKey{
-		Key: secretKey.Marshal(),
+		Key: prikey,
 	}, nil
 }
 
@@ -41,7 +44,7 @@ func (privKey *PrivKey) Bytes() []byte {
 // PubKey returns the BLS private key's public key. If the privkey is not valid
 // it returns a nil value.
 func (privKey *PrivKey) PubKey() cryptotypes.PubKey {
-	secretKey, err := bls.SecretKeyFromBytes(privKey.Bytes())
+	secretKey, err := bls.UnmarshalPrivateKey(privKey.Bytes())
 	if err != nil {
 		return nil
 	}
@@ -92,10 +95,15 @@ func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
 //
 //	a deterministic signature given a secret key SK and a message.
 func (privKey *PrivKey) Sign(digestBz []byte) ([]byte, error) {
-	secretKey, err := bls.SecretKeyFromBytes(privKey.Bytes())
+	secretKey, err := bls.UnmarshalPrivateKey(privKey.Bytes())
 	if err != nil {
 		return nil, err
 	}
 
-	return secretKey.Sign(digestBz).Marshal(), nil
+	signature, err := secretKey.Sign(digestBz, votepool.DST)
+	if err != nil {
+		panic(err)
+	}
+
+	return signature.Marshal()
 }
