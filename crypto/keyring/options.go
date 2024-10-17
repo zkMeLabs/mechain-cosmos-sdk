@@ -5,12 +5,12 @@ import (
 )
 
 var (
-	// SupportedAlgorithms defines the list of signing algorithms used on Greenfield:
+	// SupportedAlgorithms defines the list of signing algorithms used on Mechain:
 	//  - eth_secp256k1 (Ethereum)
 	//  - eth_bls (Ethereum)
 	//  - secp256k1 (For legacy accounts)
 	SupportedAlgorithms = SigningAlgoList{hd.EthSecp256k1, hd.EthBLS, hd.Secp256k1}
-	// SupportedAlgorithmsLedger defines the list of signing algorithms used on Greenfield for the Ledger device:
+	// SupportedAlgorithmsLedger defines the list of signing algorithms used on Mechain for the Ledger device:
 	//  - eth_secp256k1 (Ethereum)
 	//  - eth_bls (Ethereum)
 	//  - secp256k1 (For legacy accounts)

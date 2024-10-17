@@ -177,10 +177,10 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.1
 
-	github.com/cometbft/cometbft => github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.1
-	github.com/cometbft/cometbft-db => github.com/bnb-chain/greenfield-cometbft-db v0.8.1-alpha.1
+	github.com/cometbft/cometbft => github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.2
+	github.com/cometbft/cometbft-db => github.com/zkMeLabs/mechain-cometbft-db v0.8.1-alpha.1
 	github.com/cosmos/gogoproto => github.com/zkMeLabs/gogoproto v1.4.10-mechain.1
-	github.com/cosmos/iavl => github.com/bnb-chain/greenfield-iavl v0.20.1
+	github.com/cosmos/iavl => github.com/zkMeLabs/mechain-iavl v0.20.1
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.

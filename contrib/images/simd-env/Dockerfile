@@ -13,7 +13,7 @@ COPY core/go.mod core/go.sum /work/core/
 COPY depinject/go.mod depinject/go.sum /work/depinject/
 COPY tx/go.mod tx/go.sum /work/tx/
 
-RUN go env -w GOPRIVATE="github.com/bnb-chain/*"
+RUN go env -w GOPRIVATE="github.com/zkMeLabs/*"
 RUN git config --global url."https://${GH_TOKEN}@github.com".insteadOf "https://github.com"
 
 RUN go mod download

@@ -33,9 +33,9 @@ import (
 )
 
 var domain = &apitypes.TypedDataDomain{
-	Name:              "Greenfield Tx",
+	Name:              "Mechain Tx",
 	Version:           "1.0.0",
-	VerifyingContract: "greenfield",
+	VerifyingContract: "mechain",
 	Salt:              "0",
 }
 

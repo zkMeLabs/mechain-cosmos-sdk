@@ -584,10 +584,6 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 h1:41iFGWnSlI2gVpmOtVTJZNodLdLQLn/KsJqFvXwnd/s=
 github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
-github.com/bnb-chain/greenfield-cometbft-db v0.8.1-alpha.1 h1:XcWulGacHVRiSCx90Q8Y//ajOrLNBQWR/KDB89dy3cU=
-github.com/bnb-chain/greenfield-cometbft-db v0.8.1-alpha.1/go.mod h1:ey1CiK4bYo1RBNJLRiVbYr5CMdSxci9S/AZRINLtppI=
-github.com/bnb-chain/greenfield-iavl v0.20.1 h1:y3L64GU99otNp27/xLVBTDbv4eroR6CzoYz0rbaVotM=
-github.com/bnb-chain/greenfield-iavl v0.20.1/go.mod h1:oLksTs8dfh7DYIKBro7hbRQ+ewls7ghJ27pIXlbEXyI=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/btcsuite/btcd v0.22.1 h1:CnwP9LM/M9xuRrGSCGeMVs9iv09uMqwsVX7EeIpgV2c=
@@ -1435,8 +1431,12 @@ github.com/zeebo/assert v1.3.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN
 github.com/zeebo/xxh3 v1.0.2/go.mod h1:5NWz9Sef7zIDm2JHfFlcQvNekmcEl9ekUZQQKCYaDcA=
 github.com/zkMeLabs/gogoproto v1.4.10-mechain.1 h1:E1dPXljwfXo8iCSvXrrT/Z0Nbsqj1LRnvaZyNOon/GE=
 github.com/zkMeLabs/gogoproto v1.4.10-mechain.1/go.mod h1:4MAjcvaAJ0XqShPii8ShVsYGPvdYg0330FbFhMIgDRY=
-github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.1 h1:dCgphNctHpYRguH/mvSGGTCpVhEM0l4DKW1YiXjQRow=
-github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.1/go.mod h1:hCYgxS5c9v4oLfcz91/BeSdsoXcR14D636woFdhis/k=
+github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.2 h1:CkgK9LBQ/NWdQgPteasjKbBSM7jq68jCra3guLsDCFw=
+github.com/zkMeLabs/mechain-cometbft v1.3.0-mechain.2/go.mod h1:3YdCLtX08jS0LaFrhl3bkjTqUd45dylQN84xKYjM32I=
+github.com/zkMeLabs/mechain-cometbft-db v0.8.1-alpha.1 h1:nq2MtEW59EqqqvV/Diarxxc5K9LJj3a21273xvpPJpw=
+github.com/zkMeLabs/mechain-cometbft-db v0.8.1-alpha.1/go.mod h1:ey1CiK4bYo1RBNJLRiVbYr5CMdSxci9S/AZRINLtppI=
+github.com/zkMeLabs/mechain-iavl v0.20.1 h1:2dreayjVdDHlDsnMTUZHEjLcBXwlsfZTz4FyvxF+uVo=
+github.com/zkMeLabs/mechain-iavl v0.20.1/go.mod h1:oLksTs8dfh7DYIKBro7hbRQ+ewls7ghJ27pIXlbEXyI=
 github.com/zkMeLabs/polygon-edge v1.3.3-mechain.1 h1:7oXZzLBo/V2/VvLONe0vyh3uwcMf9Znuz2cp77I1hAc=
 github.com/zkMeLabs/polygon-edge v1.3.3-mechain.1/go.mod h1:bDvHrg7QQKSx31K588TEWgHICl5dCPkotffzK9CE6IE=
 github.com/zondax/hid v0.9.1 h1:gQe66rtmyZ8VeGFcOpbuH3r7erYtNEAezCAYu8LdkJo=

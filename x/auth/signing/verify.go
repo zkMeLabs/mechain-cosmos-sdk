@@ -21,7 +21,7 @@ func VerifySignature(pubKey cryptotypes.PubKey, signerData SignerData, sigData s
 	switch data := sigData.(type) {
 	case *signing.SingleSignatureData:
 		// EIP712 signatures are verified in a different way
-		// In greenfield, we adapt another antehandler to reject non-EIP712 signatures
+		// In mechain, we adapt another antehandler to reject non-EIP712 signatures
 		if data.SignMode == signing.SignMode_SIGN_MODE_EIP_712 {
 			// skip signature verification if we have a cache and the tx is already in it
 			if sigCache != nil && txBytes != nil {
